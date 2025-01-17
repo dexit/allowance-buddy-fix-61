@@ -3,6 +3,7 @@ interface AllowanceRates {
   ageRates: {
     [key: string]: number;
   };
+  experiencedMultiplier: number;
 }
 
 interface ChildAllowance {
@@ -26,7 +27,8 @@ const ALLOWANCE_RATES: AllowanceRates = {
     "5-10": 76.66,
     "11-15": 86.23,
     "16-17": 100.38
-  }
+  },
+  experiencedMultiplier: 1.2
 };
 
 export const getAgeGroup = (age: number): string => {

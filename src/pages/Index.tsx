@@ -6,19 +6,43 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { calculateTotalAllowance } from "@/lib/calculator";
 import { Plus, Minus } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Slider } from "@/components/ui/slider";
 
 interface Child {
   id: string;
   age: string;
+  fosterType: "new" | "experienced";
+  weeks: number;
 }
 
 const Index = () => {
-  const [children, setChildren] = useState<Child[]>([{ id: "1", age: "" }]);
+  const [children, setChildren] = useState<Child[]>([
+    { id: "1", age: "", fosterType: "new", weeks: 52 }
+  ]);
   const [result, setResult] = useState<any>(null);
   const { toast } = useToast();
 
   const handleAddChild = () => {
-    setChildren([...children, { id: crypto.randomUUID(), age: "" }]);
+    const totalWeeks = children.reduce((sum, child) => sum + child.weeks, 0);
+    if (totalWeeks >= 52) {
+      toast({
+        title: "Maximum Weeks Reached",
+        description: "Total weeks across all children cannot exceed 52",
+        variant: "destructive",
+      });
+      return;
+    }
+    setChildren([
+      ...children,
+      { id: crypto.randomUUID(), age: "", fosterType: "new", weeks: 52 - totalWeeks }
+    ]);
   };
 
   const handleRemoveChild = (id: string) => {
@@ -30,6 +54,31 @@ const Index = () => {
   const handleAgeChange = (id: string, value: string) => {
     setChildren(children.map(child => 
       child.id === id ? { ...child, age: value } : child
+    ));
+  };
+
+  const handleFosterTypeChange = (id: string, value: "new" | "experienced") => {
+    setChildren(children.map(child => 
+      child.id === id ? { ...child, fosterType: value } : child
+    ));
+  };
+
+  const handleWeeksChange = (id: string, weeks: number) => {
+    const otherChildrenWeeks = children
+      .filter(child => child.id !== id)
+      .reduce((sum, child) => sum + child.weeks, 0);
+    
+    if (otherChildrenWeeks + weeks > 52) {
+      toast({
+        title: "Invalid Weeks",
+        description: "Total weeks across all children cannot exceed 52",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setChildren(children.map(child => 
+      child.id === id ? { ...child, weeks } : child
     ));
   };
 
@@ -61,6 +110,18 @@ const Index = () => {
     }).format(amount);
   };
 
+  const generateAgeOptions = () => {
+    const options = [];
+    for (let i = 0; i <= 17; i++) {
+      options.push(
+        <SelectItem key={i} value={i.toString()}>
+          {i} years old
+        </SelectItem>
+      );
+    }
+    return options;
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-2xl mx-auto">
@@ -75,31 +136,66 @@ const Index = () => {
           <CardContent className="space-y-4">
             <div className="space-y-4">
               {children.map((child, index) => (
-                <div key={child.id} className="flex items-center gap-4">
-                  <div className="flex-grow">
-                    <Label htmlFor={`age-${child.id}`}>Child {index + 1}'s Age</Label>
-                    <Input
-                      id={`age-${child.id}`}
-                      type="number"
-                      placeholder="Enter age (0-17)"
-                      value={child.age}
-                      onChange={(e) => handleAgeChange(child.id, e.target.value)}
-                      min="0"
-                      max="17"
-                      className="w-full"
+                <div key={child.id} className="space-y-4 p-4 border rounded-lg">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-lg font-semibold">Child {index + 1}</h3>
+                    {children.length > 1 && (
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="icon"
+                        onClick={() => handleRemoveChild(child.id)}
+                      >
+                        <Minus className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor={`age-${child.id}`}>Age</Label>
+                      <Select
+                        value={child.age}
+                        onValueChange={(value) => handleAgeChange(child.id, value)}
+                      >
+                        <SelectTrigger id={`age-${child.id}`}>
+                          <SelectValue placeholder="Select age" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {generateAgeOptions()}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor={`type-${child.id}`}>Foster Type</Label>
+                      <Select
+                        value={child.fosterType}
+                        onValueChange={(value: "new" | "experienced") => 
+                          handleFosterTypeChange(child.id, value)
+                        }
+                      >
+                        <SelectTrigger id={`type-${child.id}`}>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="new">New Foster Carer</SelectItem>
+                          <SelectItem value="experienced">Experienced Foster Carer</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Weeks ({child.weeks})</Label>
+                    <Slider
+                      value={[child.weeks]}
+                      min={1}
+                      max={52}
+                      step={1}
+                      onValueChange={([value]) => handleWeeksChange(child.id, value)}
                     />
                   </div>
-                  {children.length > 1 && (
-                    <Button
-                      type="button"
-                      variant="destructive"
-                      size="icon"
-                      className="mt-6"
-                      onClick={() => handleRemoveChild(child.id)}
-                    >
-                      <Minus className="h-4 w-4" />
-                    </Button>
-                  )}
                 </div>
               ))}
             </div>
