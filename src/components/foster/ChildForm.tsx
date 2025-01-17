@@ -23,6 +23,10 @@ interface ChildFormProps {
 }
 
 export function ChildForm({ child, onUpdate, onRemove, remainingWeeks, canRemove }: ChildFormProps) {
+  const form = useForm<ChildFormData>({
+    defaultValues: child
+  });
+  
   const maxWeeks = remainingWeeks + child.weeks;
 
   return (
@@ -47,58 +51,80 @@ export function ChildForm({ child, onUpdate, onRemove, remainingWeeks, canRemove
         )}
       </div>
 
-      <div className="space-y-4">
-        <div className="space-y-2">
-          <FormLabel>Age Group</FormLabel>
-          <Select
-            value={child.ageGroup}
-            onValueChange={(value) => onUpdate(child.id, { ageGroup: value as AgeGroup })}
-          >
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {AGE_GROUPS.map((ageGroup) => (
-                <SelectItem key={ageGroup} value={ageGroup}>
-                  {ageGroup}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="space-y-2">
-          <FormLabel>Care Type</FormLabel>
-          <Select
-            value={child.isSpecialCare ? "special" : "standard"}
-            onValueChange={(value) => 
-              onUpdate(child.id, { isSpecialCare: value === "special" })
-            }
-          >
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="standard">Standard Care</SelectItem>
-              <SelectItem value="special">Special Care</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="space-y-2">
-          <FormLabel>Weeks ({child.weeks})</FormLabel>
-          <Slider
-            value={[child.weeks]}
-            min={1}
-            max={maxWeeks}
-            step={1}
-            onValueChange={([value]) => onUpdate(child.id, { weeks: value })}
+      <Form {...form}>
+        <form className="space-y-4">
+          <FormField
+            control={form.control}
+            name="ageGroup"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Age Group</FormLabel>
+                <Select
+                  value={child.ageGroup}
+                  onValueChange={(value) => onUpdate(child.id, { ageGroup: value as AgeGroup })}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {AGE_GROUPS.map((ageGroup) => (
+                      <SelectItem key={ageGroup} value={ageGroup}>
+                        {ageGroup}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </FormItem>
+            )}
           />
-          <p className="text-sm text-muted-foreground">
-            Remaining weeks available: {remainingWeeks}
-          </p>
-        </div>
-      </div>
+
+          <FormField
+            control={form.control}
+            name="isSpecialCare"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Care Type</FormLabel>
+                <Select
+                  value={child.isSpecialCare ? "special" : "standard"}
+                  onValueChange={(value) => 
+                    onUpdate(child.id, { isSpecialCare: value === "special" })
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="standard">Standard Care</SelectItem>
+                    <SelectItem value="special">Special Care</SelectItem>
+                  </SelectContent>
+                </Select>
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="weeks"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Weeks ({child.weeks})</FormLabel>
+                <FormControl>
+                  <Slider
+                    value={[child.weeks]}
+                    min={1}
+                    max={maxWeeks}
+                    step={1}
+                    onValueChange={([value]) => onUpdate(child.id, { weeks: value })}
+                  />
+                </FormControl>
+                <p className="text-sm text-muted-foreground">
+                  Remaining weeks available: {remainingWeeks}
+                </p>
+              </FormItem>
+            )}
+          />
+        </form>
+      </Form>
     </motion.div>
   );
 }
