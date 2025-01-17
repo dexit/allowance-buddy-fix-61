@@ -5,6 +5,20 @@ interface AllowanceRates {
   };
 }
 
+interface ChildAllowance {
+  age: number;
+  baseAllowance: number;
+  ageRelatedElement: number;
+  totalAllowance: number;
+}
+
+interface TotalAllowance {
+  children: ChildAllowance[];
+  weeklyTotal: number;
+  monthlyTotal: number;
+  yearlyTotal: number;
+}
+
 const ALLOWANCE_RATES: AllowanceRates = {
   baseRate: 137.18,
   ageRates: {
@@ -22,15 +36,28 @@ export const getAgeGroup = (age: number): string => {
   return "16-17";
 };
 
-export const calculateAllowance = (age: number) => {
+export const calculateAllowanceForChild = (age: number): ChildAllowance => {
   const ageGroup = getAgeGroup(age);
   const baseAllowance = ALLOWANCE_RATES.baseRate;
   const ageRelatedElement = ALLOWANCE_RATES.ageRates[ageGroup];
   const totalAllowance = baseAllowance + ageRelatedElement;
 
   return {
+    age,
     baseAllowance,
     ageRelatedElement,
     totalAllowance
+  };
+};
+
+export const calculateTotalAllowance = (ages: number[]): TotalAllowance => {
+  const children = ages.map(age => calculateAllowanceForChild(age));
+  const weeklyTotal = children.reduce((sum, child) => sum + child.totalAllowance, 0);
+  
+  return {
+    children,
+    weeklyTotal,
+    monthlyTotal: weeklyTotal * 4.33, // Average weeks in a month
+    yearlyTotal: weeklyTotal * 52
   };
 };
