@@ -4,12 +4,14 @@ interface AllowanceRates {
     [key: string]: number;
   };
   experiencedMultiplier: number;
+  specialCareMultiplier: number;
 }
 
 interface ChildAllowance {
-  age: number;
+  ageGroup: string;
   baseAllowance: number;
   ageRelatedElement: number;
+  specialCareAmount: number;
   totalAllowance: number;
 }
 
@@ -28,38 +30,54 @@ const ALLOWANCE_RATES: AllowanceRates = {
     "11-15": 86.23,
     "16-17": 100.38
   },
-  experiencedMultiplier: 1.2
+  experiencedMultiplier: 1.2,
+  specialCareMultiplier: 1.5
 };
 
-export const getAgeGroup = (age: number): string => {
-  if (age <= 4) return "0-4";
-  if (age <= 10) return "5-10";
-  if (age <= 15) return "11-15";
-  return "16-17";
-};
+export const AGE_GROUPS = ["0-4", "5-10", "11-15", "16-17"] as const;
+export type AgeGroup = typeof AGE_GROUPS[number];
 
-export const calculateAllowanceForChild = (age: number): ChildAllowance => {
-  const ageGroup = getAgeGroup(age);
+export const calculateAllowanceForChild = (
+  ageGroup: AgeGroup,
+  isSpecialCare: boolean
+): ChildAllowance => {
   const baseAllowance = ALLOWANCE_RATES.baseRate;
   const ageRelatedElement = ALLOWANCE_RATES.ageRates[ageGroup];
-  const totalAllowance = baseAllowance + ageRelatedElement;
+  const baseTotal = baseAllowance + ageRelatedElement;
+  const specialCareAmount = isSpecialCare ? baseTotal * (ALLOWANCE_RATES.specialCareMultiplier - 1) : 0;
+  const totalAllowance = baseTotal + specialCareAmount;
 
   return {
-    age,
+    ageGroup,
     baseAllowance,
     ageRelatedElement,
+    specialCareAmount,
     totalAllowance
   };
 };
 
-export const calculateTotalAllowance = (ages: number[]): TotalAllowance => {
-  const children = ages.map(age => calculateAllowanceForChild(age));
-  const weeklyTotal = children.reduce((sum, child) => sum + child.totalAllowance, 0);
-  
+export const calculateTotalAllowance = (
+  children: Array<{ ageGroup: AgeGroup; isSpecialCare: boolean; weeks: number }>,
+  isExperiencedCarer: boolean
+): TotalAllowance => {
+  const childrenAllowances = children.map(child => {
+    const baseAllowance = calculateAllowanceForChild(child.ageGroup, child.isSpecialCare);
+    const weeklyAmount = baseAllowance.totalAllowance * (child.weeks / 52);
+    return {
+      ...baseAllowance,
+      totalAllowance: weeklyAmount
+    };
+  });
+
+  const weeklyTotal = childrenAllowances.reduce(
+    (sum, child) => sum + child.totalAllowance,
+    0
+  ) * (isExperiencedCarer ? ALLOWANCE_RATES.experiencedMultiplier : 1);
+
   return {
-    children,
+    children: childrenAllowances,
     weeklyTotal,
-    monthlyTotal: weeklyTotal * 4.33, // Average weeks in a month
+    monthlyTotal: weeklyTotal * 4.33,
     yearlyTotal: weeklyTotal * 52
   };
 };
