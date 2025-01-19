@@ -6,9 +6,10 @@ import { Button } from "@/components/ui/button";
 import { UserInfoForm, type UserInfoFormData } from "@/components/foster/UserInfoForm";
 import { ChildForm } from "@/components/foster/ChildForm";
 import { ResultsDisplay } from "@/components/foster/ResultsDisplay";
-import { AnimatePresence, motion } from "framer-motion";
 import { Timeline } from "@/components/foster/Timeline";
+import { AnimatePresence, motion } from "framer-motion";
 import { ChildFormData } from "@/lib/types";
+import jsPDF from "jspdf";
 
 type Step = 'info' | 'children' | 'results';
 
@@ -34,7 +35,6 @@ export default function Index() {
   const handleUserInfoSubmit = async (data: UserInfoFormData) => {
     setIsLoading(true);
     try {
-      // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1000));
       setUserInfo(data);
       setStep('children');
@@ -80,14 +80,20 @@ export default function Index() {
   const handleCalculate = async () => {
     setIsLoading(true);
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
       const allowance = calculateTotalAllowance(children, userInfo.isExperiencedCarer);
       setResult(allowance);
       setStep('results');
+      
+      // Simulate API submission
+      await fetch('https://api.example.com/foster-allowance', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userInfo, children, allowance })
+      });
+      
       toast({
         title: "Calculation Complete",
-        description: "Your foster allowance has been calculated.",
+        description: "Your foster allowance has been calculated and saved.",
       });
     } catch (error) {
       toast({
@@ -98,6 +104,48 @@ export default function Index() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleDownloadPDF = () => {
+    const pdf = new jsPDF();
+    
+    // Add header
+    pdf.setFontSize(20);
+    pdf.text("Foster Care Allowance Report", 20, 20);
+    
+    // Add user info
+    pdf.setFontSize(12);
+    pdf.text(`Name: ${userInfo.name}`, 20, 40);
+    pdf.text(`Email: ${userInfo.email}`, 20, 50);
+    pdf.text(`Experience: ${userInfo.isExperiencedCarer ? 'Experienced' : 'New'} Carer`, 20, 60);
+    
+    // Add results
+    pdf.text("Weekly Total: £" + result.weeklyTotal.toFixed(2), 20, 80);
+    pdf.text("Monthly Total: £" + result.monthlyTotal.toFixed(2), 20, 90);
+    pdf.text("Yearly Total: £" + result.yearlyTotal.toFixed(2), 20, 100);
+    
+    pdf.save("foster-care-allowance.pdf");
+    
+    toast({
+      title: "PDF Downloaded",
+      description: "Your report has been downloaded successfully.",
+    });
+  };
+
+  const handleReset = () => {
+    setStep('info');
+    setUserInfo({
+      name: "",
+      email: "",
+      isExperiencedCarer: false
+    });
+    setChildren([{ 
+      id: "1", 
+      ageGroup: "0-4", 
+      isSpecialCare: false, 
+      weekIntervals: [{ start: 1, end: 52 }]
+    }]);
+    setResult(null);
   };
 
   return (
@@ -145,19 +193,59 @@ export default function Index() {
                   Add Another Child
                 </Button>
 
-                <Button
-                  onClick={handleCalculate}
-                  className="w-full"
-                  disabled={isLoading}
-                >
-                  {isLoading ? "Calculating..." : "Calculate Allowance"}
-                </Button>
+                <div className="flex gap-4">
+                  <Button
+                    onClick={() => setStep('info')}
+                    variant="outline"
+                    className="flex-1"
+                  >
+                    Previous
+                  </Button>
+                  <Button
+                    onClick={handleCalculate}
+                    className="flex-1"
+                    disabled={isLoading}
+                  >
+                    Calculate
+                  </Button>
+                </div>
               </div>
             </motion.div>
           )}
 
           {step === 'results' && result && (
-            <ResultsDisplay key="results" result={result} />
+            <motion.div
+              key="results"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="space-y-6"
+            >
+              <ResultsDisplay result={result} />
+              <Timeline children={children} />
+              
+              <div className="flex gap-4 mt-6">
+                <Button
+                  onClick={() => setStep('children')}
+                  variant="outline"
+                  className="flex-1"
+                >
+                  Previous
+                </Button>
+                <Button
+                  onClick={handleDownloadPDF}
+                  className="flex-1"
+                >
+                  Download PDF
+                </Button>
+                <Button
+                  onClick={handleReset}
+                  variant="destructive"
+                  className="flex-1"
+                >
+                  Reset
+                </Button>
+              </div>
+            </motion.div>
           )}
         </AnimatePresence>
       </div>
