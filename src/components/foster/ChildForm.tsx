@@ -1,33 +1,24 @@
 import { Form, FormField, FormItem, FormLabel, FormControl } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Slider } from "@/components/ui/slider";
 import { useForm } from "react-hook-form";
 import { motion } from "framer-motion";
 import { AGE_GROUPS, type AgeGroup } from "@/lib/calculator";
 import { Minus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-
-export interface ChildFormData {
-  id: string;
-  ageGroup: AgeGroup;
-  isSpecialCare: boolean;
-  weeks: number;
-}
+import { WeekIntervalInput } from "./WeekIntervalInput";
+import { ChildFormData } from "@/lib/types";
 
 interface ChildFormProps {
   child: ChildFormData;
   onUpdate: (id: string, data: Partial<ChildFormData>) => void;
   onRemove: (id: string) => void;
-  remainingWeeks: number;
   canRemove: boolean;
 }
 
-export function ChildForm({ child, onUpdate, onRemove, remainingWeeks, canRemove }: ChildFormProps) {
+export function ChildForm({ child, onUpdate, onRemove, canRemove }: ChildFormProps) {
   const form = useForm<ChildFormData>({
     defaultValues: child
   });
-  
-  const maxWeeks = remainingWeeks + child.weeks;
 
   return (
     <motion.div
@@ -104,22 +95,16 @@ export function ChildForm({ child, onUpdate, onRemove, remainingWeeks, canRemove
 
           <FormField
             control={form.control}
-            name="weeks"
+            name="weekIntervals"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Weeks ({child.weeks})</FormLabel>
+                <FormLabel>Week Intervals</FormLabel>
                 <FormControl>
-                  <Slider
-                    value={[child.weeks]}
-                    min={1}
-                    max={maxWeeks}
-                    step={1}
-                    onValueChange={([value]) => onUpdate(child.id, { weeks: value })}
+                  <WeekIntervalInput
+                    intervals={child.weekIntervals}
+                    onChange={(intervals) => onUpdate(child.id, { weekIntervals: intervals })}
                   />
                 </FormControl>
-                <p className="text-sm text-muted-foreground">
-                  Remaining weeks available: {remainingWeeks}
-                </p>
               </FormItem>
             )}
           />

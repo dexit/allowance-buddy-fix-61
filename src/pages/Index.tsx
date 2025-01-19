@@ -7,6 +7,7 @@ import { UserInfoForm, type UserInfoFormData } from "@/components/foster/UserInf
 import { ChildForm, type ChildFormData } from "@/components/foster/ChildForm";
 import { ResultsDisplay } from "@/components/foster/ResultsDisplay";
 import { AnimatePresence, motion } from "framer-motion";
+import { Timeline } from "@/components/foster/Timeline";
 
 type Step = 'info' | 'children' | 'results';
 
@@ -19,7 +20,12 @@ export default function Index() {
     isExperiencedCarer: false
   });
   const [children, setChildren] = useState<ChildFormData[]>([
-    { id: "1", ageGroup: "0-4", isSpecialCare: false, weeks: 52 }
+    { 
+      id: "1", 
+      ageGroup: "0-4", 
+      isSpecialCare: false, 
+      weekIntervals: [{ start: 1, end: 52 }]
+    }
   ]);
   const [result, setResult] = useState<any>(null);
   const { toast } = useToast();
@@ -47,22 +53,13 @@ export default function Index() {
   };
 
   const handleAddChild = () => {
-    const totalWeeks = children.reduce((sum, child) => sum + child.weeks, 0);
-    if (totalWeeks >= 52) {
-      toast({
-        title: "Maximum Weeks Reached",
-        description: "Total weeks across all children cannot exceed 52",
-        variant: "destructive",
-      });
-      return;
-    }
     setChildren([
       ...children,
       { 
         id: crypto.randomUUID(), 
         ageGroup: "0-4", 
         isSpecialCare: false, 
-        weeks: Math.min(52 - totalWeeks, 52)
+        weekIntervals: [{ start: 1, end: 52 }]
       }
     ]);
   };
@@ -77,13 +74,6 @@ export default function Index() {
     if (children.length > 1) {
       setChildren(children.filter(child => child.id !== id));
     }
-  };
-
-  const calculateRemainingWeeks = (currentChildId: string) => {
-    const totalWeeksExcludingCurrent = children
-      .filter(child => child.id !== currentChildId)
-      .reduce((sum, child) => sum + child.weeks, 0);
-    return 52 - totalWeeksExcludingCurrent;
   };
 
   const handleCalculate = async () => {
@@ -136,11 +126,12 @@ export default function Index() {
                     child={child}
                     onUpdate={handleUpdateChild}
                     onRemove={handleRemoveChild}
-                    remainingWeeks={calculateRemainingWeeks(child.id)}
                     canRemove={children.length > 1}
                   />
                 ))}
               </AnimatePresence>
+
+              <Timeline children={children} />
 
               <div className="space-y-4">
                 <Button
