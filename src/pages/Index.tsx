@@ -4,10 +4,11 @@ import { calculateTotalAllowance } from "@/lib/calculator";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { UserInfoForm, type UserInfoFormData } from "@/components/foster/UserInfoForm";
-import { ChildForm, type ChildFormData } from "@/components/foster/ChildForm";
+import { ChildForm } from "@/components/foster/ChildForm";
 import { ResultsDisplay } from "@/components/foster/ResultsDisplay";
 import { AnimatePresence, motion } from "framer-motion";
 import { Timeline } from "@/components/foster/Timeline";
+import { ChildFormData } from "@/lib/types";
 
 type Step = 'info' | 'children' | 'results';
 
