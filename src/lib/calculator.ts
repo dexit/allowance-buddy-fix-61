@@ -57,12 +57,20 @@ export const calculateAllowanceForChild = (
 };
 
 export const calculateTotalAllowance = (
-  children: Array<{ ageGroup: AgeGroup; isSpecialCare: boolean; weeks: number }>,
+  children: Array<{ 
+    ageGroup: AgeGroup; 
+    isSpecialCare: boolean; 
+    weekIntervals: Array<{ start: number; end: number }> 
+  }>,
   isExperiencedCarer: boolean
 ): TotalAllowance => {
   const childrenAllowances = children.map(child => {
     const baseAllowance = calculateAllowanceForChild(child.ageGroup, child.isSpecialCare);
-    const weeklyAmount = baseAllowance.totalAllowance * (child.weeks / 52);
+    const totalWeeks = child.weekIntervals.reduce(
+      (sum, interval) => sum + (interval.end - interval.start + 1),
+      0
+    );
+    const weeklyAmount = baseAllowance.totalAllowance * (totalWeeks / 52);
     return {
       ...baseAllowance,
       totalAllowance: weeklyAmount
