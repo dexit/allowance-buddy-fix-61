@@ -123,7 +123,6 @@ export default function Admin() {
       return;
     }
 
-    // Backup to localStorage
     localStorage.setItem("whitelabel_settings", JSON.stringify({
       ...settings,
       ...updates,
