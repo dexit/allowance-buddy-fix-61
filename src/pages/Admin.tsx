@@ -7,17 +7,25 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
+import type { Database } from "@/integrations/supabase/types";
+
+type WhitelabelSettings = Database['public']['Tables']['whitelabel_settings']['Row'];
 
 export default function Admin() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [settings, setSettings] = useState({
+  const [settings, setSettings] = useState<WhitelabelSettings>({
+    id: '',
     company_name: "",
     primary_color: "",
     welcome_message: "",
     logo_url: "",
+    email_template: null,
+    tooltip_content: null,
+    created_at: null,
+    updated_at: null
   });
   const [file, setFile] = useState<File | null>(null);
 
@@ -100,7 +108,7 @@ export default function Admin() {
     });
   };
 
-  const updateSettings = async (updates: Partial<typeof settings>) => {
+  const updateSettings = async (updates: Partial<WhitelabelSettings>) => {
     const { error } = await supabase
       .from("whitelabel_settings")
       .update(updates)
@@ -173,7 +181,7 @@ export default function Admin() {
             <Label htmlFor="welcome_message">Welcome Message</Label>
             <Textarea
               id="welcome_message"
-              value={settings.welcome_message}
+              value={settings.welcome_message || ''}
               onChange={(e) => setSettings(prev => ({ ...prev, welcome_message: e.target.value }))}
               onBlur={() => updateSettings({ welcome_message: settings.welcome_message })}
               className="min-h-[100px]"
