@@ -124,13 +124,12 @@ function IndexContent() {
       setResult(allowance);
       setStep('results');
       
-      // Convert the data to plain objects that match the Json type
       const submissionData = {
         user_info: {
           name: userInfo.name,
           email: userInfo.email,
           isExperiencedCarer: userInfo.isExperiencedCarer
-        } as Json,
+        } as unknown as Json,
         children_data: children.map(child => ({
           id: child.id,
           ageGroup: child.ageGroup,
