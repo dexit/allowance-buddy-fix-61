@@ -16,6 +16,7 @@ import { ThemeSupa } from '@supabase/auth-ui-shared';
 import { useNavigate } from 'react-router-dom';
 import { Session } from '@supabase/supabase-js';
 import { SessionContextProvider } from '@supabase/auth-helpers-react';
+import type { Json } from "@/integrations/supabase/types";
 
 type Step = 'info' | 'children' | 'results';
 
@@ -124,9 +125,9 @@ function IndexContent() {
       setStep('results');
       
       const submissionData = {
-        user_info: userInfo as unknown as Json,
-        children_data: children as unknown as Json,
-        calculations: allowance as unknown as Json,
+        user_info: userInfo as Json,
+        children_data: children as Json,
+        calculations: allowance as Json,
         status: 'submitted'
       };
 
