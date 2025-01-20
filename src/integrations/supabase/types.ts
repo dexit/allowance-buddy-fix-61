@@ -9,6 +9,41 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      whitelabel_settings: {
+        Row: {
+          id: string
+          logo_url: string | null
+          company_name: string
+          primary_color: string
+          email_template: string | null
+          welcome_message: string | null
+          tooltip_content: Json | null
+          created_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          id?: string
+          logo_url?: string | null
+          company_name: string
+          primary_color?: string
+          email_template?: string | null
+          welcome_message?: string | null
+          tooltip_content?: Json | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          id?: string
+          logo_url?: string | null
+          company_name?: string
+          primary_color?: string
+          email_template?: string | null
+          welcome_message?: string | null
+          tooltip_content?: Json | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+      }
       Dzesa: {
         Row: {
           created_at: string
