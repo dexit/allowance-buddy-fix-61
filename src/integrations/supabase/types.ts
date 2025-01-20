@@ -135,6 +135,36 @@ export type Database = {
         }
         Relationships: []
       }
+      theme_configuration: {
+        Row: {
+          colors: Json
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          mode: Database["public"]["Enums"]["theme_mode"]
+          name: string
+          updated_at: string | null
+        }
+        Insert: {
+          colors: Json
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          mode: Database["public"]["Enums"]["theme_mode"]
+          name: string
+          updated_at?: string | null
+        }
+        Update: {
+          colors?: Json
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          mode?: Database["public"]["Enums"]["theme_mode"]
+          name?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string | null
@@ -165,6 +195,7 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "user"
+      theme_mode: "light" | "dark"
     }
     CompositeTypes: {
       [_ in never]: never
