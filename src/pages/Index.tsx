@@ -124,10 +124,25 @@ function IndexContent() {
       setResult(allowance);
       setStep('results');
       
+      // Convert the data to plain objects that match the Json type
       const submissionData = {
-        user_info: userInfo as Json,
-        children_data: children as Json,
-        calculations: allowance as Json,
+        user_info: {
+          name: userInfo.name,
+          email: userInfo.email,
+          isExperiencedCarer: userInfo.isExperiencedCarer
+        } as Json,
+        children_data: children.map(child => ({
+          id: child.id,
+          ageGroup: child.ageGroup,
+          isSpecialCare: child.isSpecialCare,
+          weekIntervals: child.weekIntervals
+        })) as Json,
+        calculations: {
+          children: allowance.children,
+          weeklyTotal: allowance.weeklyTotal,
+          monthlyTotal: allowance.monthlyTotal,
+          yearlyTotal: allowance.yearlyTotal
+        } as Json,
         status: 'submitted'
       };
 
