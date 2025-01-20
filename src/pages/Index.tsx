@@ -17,6 +17,7 @@ import { useNavigate } from 'react-router-dom';
 import { Session } from '@supabase/supabase-js';
 import { SessionContextProvider } from '@supabase/auth-helpers-react';
 import type { Json } from "@/integrations/supabase/types";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 type Step = 'info' | 'children' | 'results';
 
@@ -32,6 +33,7 @@ function IndexContent() {
   const [step, setStep] = useState<Step>('info');
   const [isLoading, setIsLoading] = useState(false);
   const [session, setSession] = useState<Session | null>(null);
+  const [authError, setAuthError] = useState<string>("");
   const navigate = useNavigate();
   const [userInfo, setUserInfo] = useState<UserInfoFormData>({
     name: "",
@@ -50,14 +52,24 @@ function IndexContent() {
   const { toast } = useToast();
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-    });
+    const initializeAuth = async () => {
+      try {
+        const { data: { session: currentSession }, error: sessionError } = await supabase.auth.getSession();
+        if (sessionError) throw sessionError;
+        setSession(currentSession);
+      } catch (error) {
+        console.error('Session error:', error);
+        setAuthError("Failed to initialize authentication. Please try again.");
+      }
+    };
+
+    initializeAuth();
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = supabase.auth.onAuthStateChange(async (_event, session) => {
       setSession(session);
+      setAuthError(""); // Clear any previous errors on auth state change
     });
 
     return () => subscription.unsubscribe();
@@ -125,32 +137,14 @@ function IndexContent() {
       setStep('results');
       
       const submissionData = {
-        user_info: {
-          name: userInfo.name,
-          email: userInfo.email,
-          isExperiencedCarer: userInfo.isExperiencedCarer
-        } as unknown as Json,
+        user_info: userInfo as unknown as Json,
         children_data: children.map(child => ({
           id: child.id,
           ageGroup: child.ageGroup,
           isSpecialCare: child.isSpecialCare,
-          weekIntervals: child.weekIntervals.map(interval => ({
-            start: interval.start,
-            end: interval.end
-          }))
+          weekIntervals: child.weekIntervals
         })) as unknown as Json,
-        calculations: {
-          children: allowance.children.map(child => ({
-            ageGroup: child.ageGroup,
-            baseAllowance: child.baseAllowance,
-            ageRelatedElement: child.ageRelatedElement,
-            specialCareAmount: child.specialCareAmount,
-            totalAllowance: child.totalAllowance
-          })),
-          weeklyTotal: allowance.weeklyTotal,
-          monthlyTotal: allowance.monthlyTotal,
-          yearlyTotal: allowance.yearlyTotal
-        } as unknown as Json,
+        calculations: allowance as unknown as Json,
         status: 'submitted'
       };
 
@@ -169,9 +163,10 @@ function IndexContent() {
       });
     } catch (error) {
       console.error('Submission error:', error);
+      const errorMessage = error instanceof Error ? error.message : "Failed to save calculation. Please try again.";
       toast({
         title: "Error",
-        description: error instanceof Error ? error.message : "Failed to save calculation. Please try again.",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
@@ -228,11 +223,17 @@ function IndexContent() {
           <h2 className="text-center text-3xl font-bold tracking-tight text-gray-900 mb-8">
             Foster Care Calculator
           </h2>
+          {authError && (
+            <Alert variant="destructive" className="mb-4">
+              <AlertDescription>{authError}</AlertDescription>
+            </Alert>
+          )}
           <div className="bg-white p-8 rounded-lg shadow">
             <Auth
               supabaseClient={supabase}
               appearance={{ theme: ThemeSupa }}
               theme="light"
+              providers={[]}
             />
           </div>
         </div>
