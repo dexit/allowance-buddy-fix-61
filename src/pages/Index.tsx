@@ -135,14 +135,23 @@ function IndexContent() {
           id: child.id,
           ageGroup: child.ageGroup,
           isSpecialCare: child.isSpecialCare,
-          weekIntervals: child.weekIntervals
-        })) as Json,
+          weekIntervals: child.weekIntervals.map(interval => ({
+            start: interval.start,
+            end: interval.end
+          }))
+        })) as unknown as Json,
         calculations: {
-          children: allowance.children,
+          children: allowance.children.map(child => ({
+            ageGroup: child.ageGroup,
+            baseAllowance: child.baseAllowance,
+            ageRelatedElement: child.ageRelatedElement,
+            specialCareAmount: child.specialCareAmount,
+            totalAllowance: child.totalAllowance
+          })),
           weeklyTotal: allowance.weeklyTotal,
           monthlyTotal: allowance.monthlyTotal,
           yearlyTotal: allowance.yearlyTotal
-        } as Json,
+        } as unknown as Json,
         status: 'submitted'
       };
 
