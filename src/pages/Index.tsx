@@ -14,13 +14,23 @@ import { supabase } from "@/integrations/supabase/client";
 import { Auth } from '@supabase/auth-ui-react';
 import { ThemeSupa } from '@supabase/auth-ui-shared';
 import { useNavigate } from 'react-router-dom';
+import { Session } from '@supabase/supabase-js';
+import { SessionContextProvider } from '@supabase/auth-helpers-react';
 
 type Step = 'info' | 'children' | 'results';
 
 export default function Index() {
+  return (
+    <SessionContextProvider supabaseClient={supabase}>
+      <IndexContent />
+    </SessionContextProvider>
+  );
+}
+
+function IndexContent() {
   const [step, setStep] = useState<Step>('info');
   const [isLoading, setIsLoading] = useState(false);
-  const [session, setSession] = useState(null);
+  const [session, setSession] = useState<Session | null>(null);
   const navigate = useNavigate();
   const [userInfo, setUserInfo] = useState<UserInfoFormData>({
     name: "",
@@ -113,14 +123,16 @@ export default function Index() {
       setResult(allowance);
       setStep('results');
       
+      const submissionData = {
+        user_info: userInfo as unknown as Json,
+        children_data: children as unknown as Json,
+        calculations: allowance as unknown as Json,
+        status: 'submitted'
+      };
+
       const { error } = await supabase
         .from('foster_submissions')
-        .insert([{
-          user_info: userInfo,
-          children_data: children,
-          calculations: allowance,
-          status: 'submitted'
-        }]);
+        .insert([submissionData]);
 
       if (error) throw error;
       
