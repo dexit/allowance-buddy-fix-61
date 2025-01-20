@@ -154,11 +154,14 @@ function IndexContent() {
         status: 'submitted'
       };
 
-      const { error } = await supabase
+      const { error: submissionError } = await supabase
         .from('foster_submissions')
         .insert([submissionData]);
 
-      if (error) throw error;
+      if (submissionError) {
+        console.error('Submission error:', submissionError);
+        throw new Error(submissionError.message);
+      }
       
       toast({
         title: "Calculation Complete",
@@ -168,7 +171,7 @@ function IndexContent() {
       console.error('Submission error:', error);
       toast({
         title: "Error",
-        description: "Failed to save calculation. Please try again.",
+        description: error instanceof Error ? error.message : "Failed to save calculation. Please try again.",
         variant: "destructive",
       });
     } finally {
