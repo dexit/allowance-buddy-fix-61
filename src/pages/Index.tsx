@@ -10,6 +10,7 @@ import { Timeline } from "@/components/foster/Timeline";
 import { AnimatePresence, motion } from "framer-motion";
 import { ChildFormData } from "@/lib/types";
 import jsPDF from "jspdf";
+import { supabase } from "@/integrations/supabase/client";
 
 type Step = 'info' | 'children' | 'results';
 
@@ -84,21 +85,27 @@ export default function Index() {
       setResult(allowance);
       setStep('results');
       
-      // Simulate API submission
-      await fetch('https://api.example.com/foster-allowance', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userInfo, children, allowance })
-      });
+      // Store submission in Supabase
+      const { error } = await supabase
+        .from('foster_submissions')
+        .insert({
+          user_info: userInfo,
+          children_data: children,
+          calculations: allowance,
+          status: 'submitted'
+        });
+
+      if (error) throw error;
       
       toast({
         title: "Calculation Complete",
         description: "Your foster allowance has been calculated and saved.",
       });
     } catch (error) {
+      console.error('Submission error:', error);
       toast({
         title: "Error",
-        description: "Failed to calculate allowance. Please try again.",
+        description: "Failed to save calculation. Please try again.",
         variant: "destructive",
       });
     } finally {
