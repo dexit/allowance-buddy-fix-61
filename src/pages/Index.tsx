@@ -85,15 +85,15 @@ export default function Index() {
       setResult(allowance);
       setStep('results');
       
-      // Store submission in Supabase
+      // Store submission in Supabase - now as an array with one object
       const { error } = await supabase
         .from('foster_submissions')
-        .insert({
+        .insert([{
           user_info: userInfo,
           children_data: children,
           calculations: allowance,
           status: 'submitted'
-        });
+        }]);
 
       if (error) throw error;
       
