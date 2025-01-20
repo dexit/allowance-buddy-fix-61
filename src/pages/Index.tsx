@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { calculateTotalAllowance } from "@/lib/calculator";
 import { Plus } from "lucide-react";
@@ -11,12 +11,17 @@ import { AnimatePresence, motion } from "framer-motion";
 import { ChildFormData } from "@/lib/types";
 import jsPDF from "jspdf";
 import { supabase } from "@/integrations/supabase/client";
+import { Auth } from '@supabase/auth-ui-react';
+import { ThemeSupa } from '@supabase/auth-ui-shared';
+import { useNavigate } from 'react-router-dom';
 
 type Step = 'info' | 'children' | 'results';
 
 export default function Index() {
   const [step, setStep] = useState<Step>('info');
   const [isLoading, setIsLoading] = useState(false);
+  const [session, setSession] = useState(null);
+  const navigate = useNavigate();
   const [userInfo, setUserInfo] = useState<UserInfoFormData>({
     name: "",
     email: "",
@@ -32,6 +37,20 @@ export default function Index() {
   ]);
   const [result, setResult] = useState<any>(null);
   const { toast } = useToast();
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+    });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   const handleUserInfoSubmit = async (data: UserInfoFormData) => {
     setIsLoading(true);
@@ -79,13 +98,21 @@ export default function Index() {
   };
 
   const handleCalculate = async () => {
+    if (!session) {
+      toast({
+        title: "Authentication Required",
+        description: "Please sign in to save your calculations.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsLoading(true);
     try {
       const allowance = calculateTotalAllowance(children, userInfo.isExperiencedCarer);
       setResult(allowance);
       setStep('results');
       
-      // Store submission in Supabase - now as an array with one object
       const { error } = await supabase
         .from('foster_submissions')
         .insert([{
@@ -155,9 +182,36 @@ export default function Index() {
     setResult(null);
   };
 
+  if (!session) {
+    return (
+      <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-md mx-auto">
+          <h2 className="text-center text-3xl font-bold tracking-tight text-gray-900 mb-8">
+            Foster Care Calculator
+          </h2>
+          <div className="bg-white p-8 rounded-lg shadow">
+            <Auth
+              supabaseClient={supabase}
+              appearance={{ theme: ThemeSupa }}
+              theme="light"
+            />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-2xl mx-auto">
+        <div className="flex justify-end mb-4">
+          <Button
+            variant="outline"
+            onClick={() => supabase.auth.signOut()}
+          >
+            Sign Out
+          </Button>
+        </div>
         <AnimatePresence mode="wait">
           {step === 'info' && (
             <UserInfoForm
