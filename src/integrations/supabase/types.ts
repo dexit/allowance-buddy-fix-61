@@ -9,6 +9,30 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      activity_logs: {
+        Row: {
+          action: string
+          created_at: string | null
+          details: Json | null
+          id: string
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string | null
+          details?: Json | null
+          id?: string
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string | null
+          details?: Json | null
+          id?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       Dzesa: {
         Row: {
           created_at: string
@@ -77,6 +101,44 @@ export type Database = {
           user_info?: Json | null
         }
         Relationships: []
+      }
+      external_submissions: {
+        Row: {
+          created_at: string | null
+          external_service: string
+          id: string
+          response: Json | null
+          status: string
+          submission_id: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          external_service: string
+          id?: string
+          response?: Json | null
+          status: string
+          submission_id?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          external_service?: string
+          id?: string
+          response?: Json | null
+          status?: string
+          submission_id?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "external_submissions_submission_id_fkey"
+            columns: ["submission_id"]
+            isOneToOne: false
+            referencedRelation: "foster_submissions"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       foster_submissions: {
         Row: {

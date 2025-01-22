@@ -171,26 +171,39 @@ function IndexContent() {
       setResult(allowance);
       setStep('results');
       
-      const submissionData = {
-        user_info: userInfo as unknown as Json,
-        children_data: children.map(child => ({
-          id: child.id,
-          ageGroup: child.ageGroup,
-          isSpecialCare: child.isSpecialCare,
-          weekIntervals: child.weekIntervals
-        })) as unknown as Json,
-        calculations: allowance as unknown as Json,
-        status: 'submitted'
-      };
-
-      const { error: submissionError } = await supabase
+      // Save submission
+      const { data: submission, error: submissionError } = await supabase
         .from('foster_submissions')
-        .insert([submissionData]);
+        .insert([{
+          user_info: userInfo,
+          children_data: children,
+          calculations: allowance,
+          status: 'submitted'
+        }])
+        .select()
+        .single();
 
-      if (submissionError) {
-        console.error('Submission error:', submissionError);
-        throw new Error(submissionError.message);
-      }
+      if (submissionError) throw submissionError;
+
+      // Log activity
+      await supabase
+        .from('activity_logs')
+        .insert([{
+          user_id: session.user.id,
+          action: 'calculation_submitted',
+          details: {
+            submission_id: submission.id,
+            total: allowance.yearlyTotal
+          }
+        }]);
+
+      // Submit to external service
+      await supabase.functions.invoke('submit-to-external', {
+        body: {
+          submissionId: submission.id,
+          userInfo
+        }
+      });
       
       toast({
         title: "Calculation Complete",
