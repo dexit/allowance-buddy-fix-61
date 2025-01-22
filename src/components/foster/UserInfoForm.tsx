@@ -1,15 +1,20 @@
-import { Form, FormField, FormItem, FormLabel, FormControl } from "@/components/ui/form";
+import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useForm } from "react-hook-form";
 import { motion } from "framer-motion";
 import { Loader2 } from "lucide-react";
+import * as z from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
 
-export interface UserInfoFormData {
-  name: string;
-  email: string;
-  isExperiencedCarer: boolean;
-}
+const formSchema = z.object({
+  name: z.string().min(2, "Name must be at least 2 characters"),
+  email: z.string().email("Please enter a valid email"),
+  phone: z.string().min(10, "Please enter a valid phone number"),
+  isExperiencedCarer: z.boolean()
+});
+
+export type UserInfoFormData = z.infer<typeof formSchema>;
 
 interface UserInfoFormProps {
   onSubmit: (data: UserInfoFormData) => void;
@@ -17,7 +22,15 @@ interface UserInfoFormProps {
 }
 
 export function UserInfoForm({ onSubmit, isLoading }: UserInfoFormProps) {
-  const form = useForm<UserInfoFormData>();
+  const form = useForm<UserInfoFormData>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      name: "",
+      email: "",
+      phone: "",
+      isExperiencedCarer: false
+    }
+  });
 
   return (
     <motion.div
@@ -36,6 +49,7 @@ export function UserInfoForm({ onSubmit, isLoading }: UserInfoFormProps) {
                 <FormControl>
                   <Input {...field} disabled={isLoading} />
                 </FormControl>
+                <FormMessage />
               </FormItem>
             )}
           />
@@ -48,6 +62,20 @@ export function UserInfoForm({ onSubmit, isLoading }: UserInfoFormProps) {
                 <FormControl>
                   <Input type="email" {...field} disabled={isLoading} />
                 </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="phone"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Phone Number</FormLabel>
+                <FormControl>
+                  <Input type="tel" {...field} disabled={isLoading} />
+                </FormControl>
+                <FormMessage />
               </FormItem>
             )}
           />
@@ -70,6 +98,7 @@ export function UserInfoForm({ onSubmit, isLoading }: UserInfoFormProps) {
                     <SelectItem value="experienced">Experienced Foster Carer</SelectItem>
                   </SelectContent>
                 </Select>
+                <FormMessage />
               </FormItem>
             )}
           />

@@ -59,24 +59,44 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   return <>{children}</>;
 };
 
+// Create an embeddable widget component
+const EmbeddableWidget = () => {
+  return (
+    <div className="w-full h-full">
+      <Index />
+    </div>
+  );
+};
+
+// Check if the app is running in embedded mode
+const isEmbedded = window.location.search.includes('embedded=true');
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
-      <Toaster />
-      <Sonner />
+      {!isEmbedded && (
+        <>
+          <Toaster />
+          <Sonner />
+        </>
+      )}
       <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/auth" element={<Auth />} />
-          <Route
-            path="/admin"
-            element={
-              <ProtectedRoute>
-                <Admin />
-              </ProtectedRoute>
-            }
-          />
-        </Routes>
+        {isEmbedded ? (
+          <EmbeddableWidget />
+        ) : (
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/auth" element={<Auth />} />
+            <Route
+              path="/admin"
+              element={
+                <ProtectedRoute>
+                  <Admin />
+                </ProtectedRoute>
+              }
+            />
+          </Routes>
+        )}
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
