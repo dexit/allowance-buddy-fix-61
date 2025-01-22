@@ -13,13 +13,10 @@ import jsPDF from "jspdf";
 import { supabase } from "@/integrations/supabase/client";
 import { Auth } from '@supabase/auth-ui-react';
 import { ThemeSupa } from '@supabase/auth-ui-shared';
-import { useNavigate } from 'react-router-dom';
 import { Session } from '@supabase/supabase-js';
 import { SessionContextProvider } from '@supabase/auth-helpers-react';
 import type { Json } from "@/integrations/supabase/types";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Input } from "@/components/ui/input";
-import { Card } from "@/components/ui/card";
 
 type Step = 'info' | 'children' | 'results';
 
@@ -36,11 +33,7 @@ function IndexContent() {
   const [isLoading, setIsLoading] = useState(false);
   const [session, setSession] = useState<Session | null>(null);
   const [authError, setAuthError] = useState<string>("");
-  const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
-  const navigate = useNavigate();
   const { toast } = useToast();
-  const [showCalculator, setShowCalculator] = useState(false);
   const [userInfo, setUserInfo] = useState<UserInfoFormData>({
     name: "",
     email: "",
@@ -79,36 +72,6 @@ function IndexContent() {
 
     return () => subscription.unsubscribe();
   }, []);
-
-  const handleSubscribe = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-    try {
-      // Here you would typically send this to your backend
-      const { error } = await supabase.functions.invoke('send-welcome-email', {
-        body: { email, phone }
-      });
-
-      if (error) throw error;
-
-      toast({
-        title: "Subscription Successful",
-        description: "Thank you for subscribing! Check your email for more information.",
-      });
-      
-      setEmail("");
-      setPhone("");
-    } catch (error) {
-      console.error('Subscription error:', error);
-      toast({
-        title: "Error",
-        description: "Failed to subscribe. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   const handleUserInfoSubmit = async (data: UserInfoFormData) => {
     setIsLoading(true);
@@ -171,15 +134,17 @@ function IndexContent() {
       setResult(allowance);
       setStep('results');
       
-      // Save submission - fixed type issue
+      // Save submission with proper type assertions
+      const submissionData = {
+        user_info: userInfo as unknown as Json,
+        children_data: children as unknown as Json,
+        calculations: allowance as unknown as Json,
+        status: 'submitted'
+      };
+
       const { data: submission, error: submissionError } = await supabase
         .from('foster_submissions')
-        .insert({
-          user_info: userInfo as Json,
-          children_data: children as Json,
-          calculations: allowance as Json,
-          status: 'submitted'
-        })
+        .insert(submissionData)
         .select()
         .single();
 
@@ -264,82 +229,6 @@ function IndexContent() {
     setResult(null);
   };
 
-  const SubscriptionForm = () => (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-purple-50 to-pink-50"
-    >
-      <div className="w-full max-w-md px-4">
-        <div className="text-center mb-8">
-          <img
-            src="https://f5fostercare.co.uk/wp-content/smush-webp/2024/08/f5-web-logo-done.png.webp"
-            alt="F5 Foster Care"
-            className="mx-auto h-16 mb-6"
-          />
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Welcome to F5 Foster Care</h1>
-          <p className="text-gray-600">Subscribe to learn more about fostering opportunities</p>
-        </div>
-
-        <Card className="p-6 shadow-lg bg-white/80 backdrop-blur">
-          <form onSubmit={handleSubscribe} className="space-y-4">
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-                Email Address
-              </label>
-              <Input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="Enter your email"
-                required
-                className="w-full"
-              />
-            </div>
-
-            <div>
-              <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
-                Phone Number
-              </label>
-              <Input
-                id="phone"
-                type="tel"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                placeholder="Enter your phone number"
-                required
-                className="w-full"
-              />
-            </div>
-
-            <Button
-              type="submit"
-              className="w-full bg-[#9b87f5] hover:bg-[#7E69AB] text-white"
-              disabled={isLoading}
-            >
-              {isLoading ? "Processing..." : "Subscribe"}
-            </Button>
-          </form>
-
-          <div className="mt-4 text-center">
-            <Button
-              variant="link"
-              onClick={() => setShowCalculator(true)}
-              className="text-[#9b87f5] hover:text-[#7E69AB]"
-            >
-              Access Foster Care Calculator
-            </Button>
-          </div>
-        </Card>
-      </div>
-    </motion.div>
-  );
-
-  if (!showCalculator) {
-    return <SubscriptionForm />;
-  }
-
   if (!session) {
     return (
       <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
@@ -368,22 +257,13 @@ function IndexContent() {
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-2xl mx-auto">
-        <div className="flex justify-between items-center mb-4">
+        <div className="flex justify-end mb-4">
           <Button
             variant="outline"
-            onClick={() => setShowCalculator(false)}
-            className="text-[#9b87f5]"
+            onClick={() => supabase.auth.signOut()}
           >
-            Back to Subscribe
+            Sign Out
           </Button>
-          {session && (
-            <Button
-              variant="outline"
-              onClick={() => supabase.auth.signOut()}
-            >
-              Sign Out
-            </Button>
-          )}
         </div>
 
         <AnimatePresence mode="wait">
