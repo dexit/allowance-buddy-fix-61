@@ -14,13 +14,13 @@ async function createSuperAdmin() {
     }
 
     if (signUpData.user) {
-      // Assign the superadmin role
+      // Assign the admin role
       const { error: roleError } = await supabase
         .from('user_roles')
         .insert([
           {
             user_id: signUpData.user.id,
-            role: 'admin'  // Changed from 'superadmin' to 'admin' to match the enum type
+            role: 'admin'  // Using 'admin' role as per the schema
           }
         ]);
 
@@ -29,8 +29,10 @@ async function createSuperAdmin() {
         return;
       }
 
-      console.log('Superadmin created successfully!');
-      console.log('Important: You need to confirm the email address in the Supabase dashboard or disable email confirmation in the authentication settings.');
+      console.log('Admin user created successfully!');
+      console.log('Important: You need to either:');
+      console.log('1. Confirm the email address in the Supabase dashboard');
+      console.log('2. Or disable email confirmation in the authentication settings');
     }
   } catch (error) {
     console.error('Unexpected error:', error);
