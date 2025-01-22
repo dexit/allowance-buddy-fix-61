@@ -19,6 +19,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { Database } from "@/integrations/supabase/types";
 
 type WhitelabelSettings = Database['public']['Tables']['whitelabel_settings']['Row'];
+type AppRole = "admin" | "user" | "superadmin";
 
 export default function Admin() {
   const navigate = useNavigate();
@@ -175,12 +176,12 @@ export default function Admin() {
     });
   };
 
-  const updateUserRole = async (userId: string, role: Database['public']['Enums']['app_role']) => {
+  const updateUserRole = async (userId: string, newRole: AppRole) => {
     const { error } = await supabase
       .from("user_roles")
       .upsert({ 
         user_id: userId, 
-        role: role as "admin" | "user" | "superadmin"
+        role: newRole
       });
 
     if (error) {
@@ -311,7 +312,7 @@ export default function Admin() {
                     <TableCell>
                       <select
                         value={user.role}
-                        onChange={(e) => updateUserRole(user.id, e.target.value)}
+                        onChange={(e) => updateUserRole(user.id, e.target.value as AppRole)}
                         className="border rounded p-1"
                       >
                         <option value="user">User</option>
