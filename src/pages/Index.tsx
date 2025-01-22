@@ -171,15 +171,15 @@ function IndexContent() {
       setResult(allowance);
       setStep('results');
       
-      // Save submission
+      // Save submission - fixed type issue
       const { data: submission, error: submissionError } = await supabase
         .from('foster_submissions')
-        .insert([{
-          user_info: userInfo,
-          children_data: children,
-          calculations: allowance,
+        .insert({
+          user_info: userInfo as Json,
+          children_data: children as Json,
+          calculations: allowance as Json,
           status: 'submitted'
-        }])
+        })
         .select()
         .single();
 
@@ -188,14 +188,14 @@ function IndexContent() {
       // Log activity
       await supabase
         .from('activity_logs')
-        .insert([{
+        .insert({
           user_id: session.user.id,
           action: 'calculation_submitted',
           details: {
             submission_id: submission.id,
             total: allowance.yearlyTotal
           }
-        }]);
+        });
 
       // Submit to external service
       await supabase.functions.invoke('submit-to-external', {

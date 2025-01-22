@@ -175,11 +175,13 @@ export default function Admin() {
     });
   };
 
-  const updateUserRole = async (userId: string, role: string) => {
+  const updateUserRole = async (userId: string, role: Database['public']['Enums']['app_role']) => {
     const { error } = await supabase
       .from("user_roles")
-      .upsert({ user_id: userId, role })
-      .eq("user_id", userId);
+      .upsert({ 
+        user_id: userId, 
+        role: role as "admin" | "user" | "superadmin"
+      });
 
     if (error) {
       toast({
@@ -223,71 +225,71 @@ export default function Admin() {
 
         <TabsContent value="settings">
           <Card className="p-6">
-        <div className="space-y-6">
-          <div className="space-y-2">
-            <Label htmlFor="company_name">Company Name</Label>
-            <Input
-              id="company_name"
-              value={settings.company_name}
-              onChange={(e) => setSettings(prev => ({ ...prev, company_name: e.target.value }))}
-              onBlur={() => updateSettings({ company_name: settings.company_name })}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="primary_color">Primary Color</Label>
-            <div className="flex gap-2">
-              <Input
-                id="primary_color"
-                type="color"
-                value={settings.primary_color}
-                onChange={(e) => setSettings(prev => ({ ...prev, primary_color: e.target.value }))}
-                onBlur={() => updateSettings({ primary_color: settings.primary_color })}
-              />
-              <Input
-                value={settings.primary_color}
-                onChange={(e) => setSettings(prev => ({ ...prev, primary_color: e.target.value }))}
-                onBlur={() => updateSettings({ primary_color: settings.primary_color })}
-              />
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="welcome_message">Welcome Message</Label>
-            <Textarea
-              id="welcome_message"
-              value={settings.welcome_message || ''}
-              onChange={(e) => setSettings(prev => ({ ...prev, welcome_message: e.target.value }))}
-              onBlur={() => updateSettings({ welcome_message: settings.welcome_message })}
-              className="min-h-[100px]"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="logo">Logo</Label>
-            <div className="flex items-center gap-4">
-              {settings.logo_url && (
-                <img
-                  src={settings.logo_url}
-                  alt="Company logo"
-                  className="h-12 w-auto object-contain"
+            <div className="space-y-6">
+              <div className="space-y-2">
+                <Label htmlFor="company_name">Company Name</Label>
+                <Input
+                  id="company_name"
+                  value={settings.company_name}
+                  onChange={(e) => setSettings(prev => ({ ...prev, company_name: e.target.value }))}
+                  onBlur={() => updateSettings({ company_name: settings.company_name })}
                 />
-              )}
-              <Input
-                id="logo"
-                type="file"
-                accept="image/*"
-                onChange={(e) => setFile(e.target.files?.[0] || null)}
-              />
-              <Button
-                onClick={handleLogoUpload}
-                disabled={!file}
-              >
-                Upload Logo
-              </Button>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="primary_color">Primary Color</Label>
+                <div className="flex gap-2">
+                  <Input
+                    id="primary_color"
+                    type="color"
+                    value={settings.primary_color}
+                    onChange={(e) => setSettings(prev => ({ ...prev, primary_color: e.target.value }))}
+                    onBlur={() => updateSettings({ primary_color: settings.primary_color })}
+                  />
+                  <Input
+                    value={settings.primary_color}
+                    onChange={(e) => setSettings(prev => ({ ...prev, primary_color: e.target.value }))}
+                    onBlur={() => updateSettings({ primary_color: settings.primary_color })}
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="welcome_message">Welcome Message</Label>
+                <Textarea
+                  id="welcome_message"
+                  value={settings.welcome_message || ''}
+                  onChange={(e) => setSettings(prev => ({ ...prev, welcome_message: e.target.value }))}
+                  onBlur={() => updateSettings({ welcome_message: settings.welcome_message })}
+                  className="min-h-[100px]"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="logo">Logo</Label>
+                <div className="flex items-center gap-4">
+                  {settings.logo_url && (
+                    <img
+                      src={settings.logo_url}
+                      alt="Company logo"
+                      className="h-12 w-auto object-contain"
+                    />
+                  )}
+                  <Input
+                    id="logo"
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => setFile(e.target.files?.[0] || null)}
+                  />
+                  <Button
+                    onClick={handleLogoUpload}
+                    disabled={!file}
+                  >
+                    Upload Logo
+                  </Button>
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
           </Card>
         </TabsContent>
 
