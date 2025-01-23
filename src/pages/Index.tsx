@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { calculateTotalAllowance } from "@/lib/calculator";
 import { Plus } from "lucide-react";
@@ -11,32 +11,18 @@ import { AnimatePresence, motion } from "framer-motion";
 import { ChildFormData } from "@/lib/types";
 import jsPDF from "jspdf";
 import { supabase } from "@/integrations/supabase/client";
-import { Auth } from '@supabase/auth-ui-react';
-import { ThemeSupa } from '@supabase/auth-ui-shared';
-import { Session } from '@supabase/supabase-js';
-import { SessionContextProvider } from '@supabase/auth-helpers-react';
 import type { Json } from "@/integrations/supabase/types";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 
 type Step = 'info' | 'children' | 'results';
 
 export default function Index() {
-  return (
-    <SessionContextProvider supabaseClient={supabase}>
-      <IndexContent />
-    </SessionContextProvider>
-  );
-}
-
-function IndexContent() {
   const [step, setStep] = useState<Step>('info');
   const [isLoading, setIsLoading] = useState(false);
-  const [session, setSession] = useState<Session | null>(null);
-  const [authError, setAuthError] = useState<string>("");
   const { toast } = useToast();
   const [userInfo, setUserInfo] = useState<UserInfoFormData>({
     name: "",
     email: "",
+    phone: "",
     isExperiencedCarer: false
   });
   const [children, setChildren] = useState<ChildFormData[]>([
@@ -48,30 +34,6 @@ function IndexContent() {
     }
   ]);
   const [result, setResult] = useState<any>(null);
-
-  useEffect(() => {
-    const initializeAuth = async () => {
-      try {
-        const { data: { session: currentSession }, error: sessionError } = await supabase.auth.getSession();
-        if (sessionError) throw sessionError;
-        setSession(currentSession);
-      } catch (error) {
-        console.error('Session error:', error);
-        setAuthError("Failed to initialize authentication. Please try again.");
-      }
-    };
-
-    initializeAuth();
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      setSession(session);
-      setAuthError(""); // Clear any previous errors on auth state change
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
 
   const handleUserInfoSubmit = async (data: UserInfoFormData) => {
     setIsLoading(true);
@@ -119,22 +81,13 @@ function IndexContent() {
   };
 
   const handleCalculate = async () => {
-    if (!session) {
-      toast({
-        title: "Authentication Required",
-        description: "Please sign in to save your calculations.",
-        variant: "destructive",
-      });
-      return;
-    }
-
     setIsLoading(true);
     try {
       const allowance = calculateTotalAllowance(children, userInfo.isExperiencedCarer);
       setResult(allowance);
       setStep('results');
       
-      // Save submission with proper type assertions
+      // Save submission
       const submissionData = {
         user_info: userInfo as unknown as Json,
         children_data: children as unknown as Json,
@@ -142,33 +95,11 @@ function IndexContent() {
         status: 'submitted'
       };
 
-      const { data: submission, error: submissionError } = await supabase
+      const { error: submissionError } = await supabase
         .from('foster_submissions')
-        .insert(submissionData)
-        .select()
-        .single();
+        .insert(submissionData);
 
       if (submissionError) throw submissionError;
-
-      // Log activity
-      await supabase
-        .from('activity_logs')
-        .insert({
-          user_id: session.user.id,
-          action: 'calculation_submitted',
-          details: {
-            submission_id: submission.id,
-            total: allowance.yearlyTotal
-          }
-        });
-
-      // Submit to external service
-      await supabase.functions.invoke('submit-to-external', {
-        body: {
-          submissionId: submission.id,
-          userInfo
-        }
-      });
       
       toast({
         title: "Calculation Complete",
@@ -218,6 +149,7 @@ function IndexContent() {
     setUserInfo({
       name: "",
       email: "",
+      phone: "",
       isExperiencedCarer: false
     });
     setChildren([{ 
@@ -229,42 +161,12 @@ function IndexContent() {
     setResult(null);
   };
 
-  if (!session) {
-    return (
-      <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-md mx-auto">
-          <h2 className="text-center text-3xl font-bold tracking-tight text-gray-900 mb-8">
-            Foster Care Calculator
-          </h2>
-          {authError && (
-            <Alert variant="destructive" className="mb-4">
-              <AlertDescription>{authError}</AlertDescription>
-            </Alert>
-          )}
-          <div className="bg-white p-8 rounded-lg shadow">
-            <Auth
-              supabaseClient={supabase}
-              appearance={{ theme: ThemeSupa }}
-              theme="light"
-              providers={[]}
-            />
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-2xl mx-auto">
-        <div className="flex justify-end mb-4">
-          <Button
-            variant="outline"
-            onClick={() => supabase.auth.signOut()}
-          >
-            Sign Out
-          </Button>
-        </div>
+        <h2 className="text-center text-3xl font-bold tracking-tight text-gray-900 mb-8">
+          Foster Care Calculator
+        </h2>
 
         <AnimatePresence mode="wait">
           {step === 'info' && (
