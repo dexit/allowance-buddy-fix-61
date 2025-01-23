@@ -6,7 +6,6 @@ import { ResultsDisplay } from "@/components/foster/ResultsDisplay";
 import { Timeline } from "@/components/foster/Timeline";
 import { siteConfig } from "@/config/theme";
 import { motion } from "framer-motion";
-import { ChildFormData } from "@/lib/types";
 import { v4 as uuidv4 } from "uuid";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
