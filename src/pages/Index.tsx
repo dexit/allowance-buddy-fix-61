@@ -9,6 +9,7 @@ import { motion } from "framer-motion";
 import { v4 as uuidv4 } from "uuid";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
+import { ChildFormData } from "@/lib/types";
 
 export default function Index() {
   const [children, setChildren] = useState<ChildFormData[]>([
@@ -64,10 +65,16 @@ export default function Index() {
           transition={{ duration: 0.3 }}
           className="text-center mb-12"
         >
-          <h1 className="text-4xl font-bold tracking-tight text-gray-900 mb-4" style={{ color: siteConfig.colors.text.primary }}>
+          <h1 
+            className="text-4xl font-bold tracking-tight text-gray-900 mb-4"
+            style={{ color: siteConfig.colors.text.primary }}
+          >
             {siteConfig.forms.calculator.title}
           </h1>
-          <p className="text-xl" style={{ color: siteConfig.colors.text.secondary }}>
+          <p 
+            className="text-xl"
+            style={{ color: siteConfig.colors.text.secondary }}
+          >
             {siteConfig.forms.calculator.description}
           </p>
         </motion.div>

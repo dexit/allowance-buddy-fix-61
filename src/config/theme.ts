@@ -2,8 +2,8 @@ export const siteConfig = {
   name: "Foster Care Allowance Calculator",
   description: "Calculate your potential foster care allowance",
   colors: {
-    primary: "#9b87f5",
-    secondary: "#7E69AB",
+    primary: "#00BCD4",
+    secondary: "#FFA726",
     tertiary: "#6E59A5",
     dark: "#1A1F2C",
     light: "#D6BCFA",
@@ -23,8 +23,8 @@ export const siteConfig = {
       title: "Foster Care Allowance Calculator",
       description: "Calculate your potential foster care allowance based on your circumstances",
       buttonText: "Calculate Allowance",
-      buttonColor: "bg-[#9b87f5]",
-      buttonHoverColor: "hover:bg-[#7E69AB]",
+      buttonColor: "bg-[#00BCD4]",
+      buttonHoverColor: "hover:bg-[#00ACC1]",
       textColor: "text-[#2D3748]"
     }
   }
