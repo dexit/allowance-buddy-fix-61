@@ -1,42 +1,37 @@
 export const siteConfig = {
-  name: "F5 Foster Care",
-  tagline: "Choose to make a difference",
-  description: "Choose the survey that best suits your needs",
-  contact: {
-    phone: "0121 271 0555",
-    phoneDisplay: "0121 271 0555"
-  },
-  forms: {
-    quickCheck: {
-      title: "Quick Eligibility Check",
-      description: "A brief survey to check your initial eligibility for fostering. Perfect if you're just starting to explore the idea.",
-      duration: "Complete in 5 minutes",
-      buttonText: "Start Quick Check",
-      buttonColor: "bg-[#00BCD4]",
-      buttonHoverColor: "hover:bg-[#00ACC1]",
-      textColor: "text-[#00BCD4]"
-    },
-    fullAssessment: {
-      title: "Comprehensive Assessment",
-      description: "A detailed questionnaire covering all aspects of fostering. Ideal if you're seriously considering becoming a foster carer.",
-      duration: "Complete in 10-15 minutes",
-      buttonText: "Start Full Assessment",
-      buttonColor: "bg-[#FFA726]",
-      buttonHoverColor: "hover:bg-[#FB8C00]",
-      textColor: "text-[#FFA726]"
-    }
-  },
+  name: "Foster Care Allowance Calculator",
+  description: "Calculate your potential foster care allowance",
   colors: {
-    primary: "#00BCD4",
-    secondary: "#FFA726",
+    primary: "#9b87f5",
+    secondary: "#7E69AB",
+    tertiary: "#6E59A5",
+    dark: "#1A1F2C",
+    light: "#D6BCFA",
+    neutral: "#8E9196",
+    background: {
+      primary: "#FFFFFF",
+      secondary: "#F7FAFC"
+    },
     text: {
       primary: "#2D3748",
       secondary: "#4A5568",
       muted: "#718096"
-    },
-    background: {
-      primary: "#FFFFFF",
-      secondary: "#F7FAFC"
+    }
+  },
+  forms: {
+    calculator: {
+      title: "Foster Care Allowance Calculator",
+      description: "Calculate your potential foster care allowance based on your circumstances",
+      buttonText: "Calculate Allowance",
+      buttonColor: "bg-[#9b87f5]",
+      buttonHoverColor: "hover:bg-[#7E69AB]",
+      textColor: "text-[#2D3748]"
     }
   }
+};
+
+export const embedConfig = {
+  containerHeight: "700px",
+  containerWidth: "100%",
+  defaultContainerId: "foster-care-calculator"
 };
