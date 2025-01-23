@@ -35,7 +35,20 @@
     container.appendChild(iframe);
   }
 
+  // Handle script loading
+  function loadScript(src, callback) {
+    const script = document.createElement('script');
+    script.src = src;
+    script.type = 'module';
+    script.onload = callback;
+    document.head.appendChild(script);
+  }
+
   // Main initialization
   const containerId = document.currentScript.getAttribute('data-container-id') || generateContainerId();
-  initWidget(containerId);
+  
+  // Load GPT Engineer script first
+  loadScript('https://cdn.gpteng.co/gptengineer.js', function() {
+    initWidget(containerId);
+  });
 })();

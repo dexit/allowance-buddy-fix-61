@@ -1,44 +1,71 @@
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { calculateTotalAllowance } from "@/lib/calculator";
+import { Plus } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { UserInfoForm, type UserInfoFormData } from "@/components/foster/UserInfoForm";
 import { ChildForm } from "@/components/foster/ChildForm";
 import { ResultsDisplay } from "@/components/foster/ResultsDisplay";
 import { Timeline } from "@/components/foster/Timeline";
-import { siteConfig } from "@/config/theme";
-import { motion } from "framer-motion";
-import { v4 as uuidv4 } from "uuid";
-import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
 import { ChildFormData } from "@/lib/types";
+import jsPDF from "jspdf";
+import { supabase } from "@/integrations/supabase/client";
+import type { Json } from "@/integrations/supabase/types";
+
+type Step = 'info' | 'children' | 'results';
 
 export default function Index() {
+  const [step, setStep] = useState<Step>('info');
+  const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
+  const [userInfo, setUserInfo] = useState<UserInfoFormData>({
+    name: "",
+    email: "",
+    phone: "",
+    isExperiencedCarer: false
+  });
   const [children, setChildren] = useState<ChildFormData[]>([
-    {
-      id: uuidv4(),
-      ageGroup: "0-4",
-      isSpecialCare: false,
+    { 
+      id: "1", 
+      ageGroup: "0-4", 
+      isSpecialCare: false, 
       weekIntervals: [{ start: 1, end: 52 }]
     }
   ]);
   const [result, setResult] = useState<any>(null);
-  const { toast } = useToast();
+
+  const handleUserInfoSubmit = async (data: UserInfoFormData) => {
+    setIsLoading(true);
+    try {
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      setUserInfo(data);
+      setStep('children');
+      toast({
+        title: "Information Saved",
+        description: "You can now add children details.",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to save information. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleAddChild = () => {
     setChildren([
       ...children,
-      {
-        id: uuidv4(),
-        ageGroup: "0-4",
-        isSpecialCare: false,
+      { 
+        id: crypto.randomUUID(), 
+        ageGroup: "0-4", 
+        isSpecialCare: false, 
         weekIntervals: [{ start: 1, end: 52 }]
       }
     ]);
-  };
-
-  const handleRemoveChild = (id: string) => {
-    if (children.length > 1) {
-      setChildren(children.filter(child => child.id !== id));
-    }
   };
 
   const handleUpdateChild = (id: string, data: Partial<ChildFormData>) => {
@@ -47,75 +74,197 @@ export default function Index() {
     ));
   };
 
-  const handleCalculate = () => {
-    const calculatedResult = calculateTotalAllowance(children, false);
-    setResult(calculatedResult);
+  const handleRemoveChild = (id: string) => {
+    if (children.length > 1) {
+      setChildren(children.filter(child => child.id !== id));
+    }
+  };
+
+  const handleCalculate = async () => {
+    setIsLoading(true);
+    try {
+      const allowance = calculateTotalAllowance(children, userInfo.isExperiencedCarer);
+      setResult(allowance);
+      setStep('results');
+      
+      // Save submission
+      const submissionData = {
+        user_info: userInfo as unknown as Json,
+        children_data: children as unknown as Json,
+        calculations: allowance as unknown as Json,
+        status: 'submitted'
+      };
+
+      const { error: submissionError } = await supabase
+        .from('foster_submissions')
+        .insert(submissionData);
+
+      if (submissionError) throw submissionError;
+      
+      toast({
+        title: "Calculation Complete",
+        description: "Your foster allowance has been calculated and saved.",
+      });
+    } catch (error) {
+      console.error('Submission error:', error);
+      const errorMessage = error instanceof Error ? error.message : "Failed to save calculation. Please try again.";
+      toast({
+        title: "Error",
+        description: errorMessage,
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleDownloadPDF = () => {
+    const pdf = new jsPDF();
+    
+    // Add header
+    pdf.setFontSize(20);
+    pdf.text("Foster Care Allowance Report", 20, 20);
+    
+    // Add user info
+    pdf.setFontSize(12);
+    pdf.text(`Name: ${userInfo.name}`, 20, 40);
+    pdf.text(`Email: ${userInfo.email}`, 20, 50);
+    pdf.text(`Experience: ${userInfo.isExperiencedCarer ? 'Experienced' : 'New'} Carer`, 20, 60);
+    
+    // Add results
+    pdf.text("Weekly Total: £" + result.weeklyTotal.toFixed(2), 20, 80);
+    pdf.text("Monthly Total: £" + result.monthlyTotal.toFixed(2), 20, 90);
+    pdf.text("Yearly Total: £" + result.yearlyTotal.toFixed(2), 20, 100);
+    
+    pdf.save("foster-care-allowance.pdf");
+    
     toast({
-      title: "Calculation Complete",
-      description: "Your foster care allowance has been calculated.",
+      title: "PDF Downloaded",
+      description: "Your report has been downloaded successfully.",
     });
   };
 
+  const handleReset = () => {
+    setStep('info');
+    setUserInfo({
+      name: "",
+      email: "",
+      phone: "",
+      isExperiencedCarer: false
+    });
+    setChildren([{ 
+      id: "1", 
+      ageGroup: "0-4", 
+      isSpecialCare: false, 
+      weekIntervals: [{ start: 1, end: 52 }]
+    }]);
+    setResult(null);
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white to-blue-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-4xl mx-auto">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3 }}
-          className="text-center mb-12"
-        >
-          <h1 
-            className="text-4xl font-bold tracking-tight text-gray-900 mb-4"
-            style={{ color: siteConfig.colors.text.primary }}
-          >
-            {siteConfig.forms.calculator.title}
-          </h1>
-          <p 
-            className="text-xl"
-            style={{ color: siteConfig.colors.text.secondary }}
-          >
-            {siteConfig.forms.calculator.description}
-          </p>
-        </motion.div>
+    <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-2xl mx-auto">
+        <h2 className="text-center text-3xl font-bold tracking-tight text-gray-900 mb-8">
+          Foster Care Calculator
+        </h2>
 
-        <div className="space-y-6">
-          {children.map((child, index) => (
-            <ChildForm
-              key={child.id}
-              child={child}
-              onUpdate={handleUpdateChild}
-              onRemove={handleRemoveChild}
-              canRemove={children.length > 1}
+        <AnimatePresence mode="wait">
+          {step === 'info' && (
+            <UserInfoForm
+              key="user-info"
+              onSubmit={handleUserInfoSubmit}
+              isLoading={isLoading}
             />
-          ))}
-
-          <div className="flex justify-between items-center">
-            <Button
-              onClick={handleAddChild}
-              variant="outline"
-              className="w-full sm:w-auto"
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              Add Another Child
-            </Button>
-
-            <Button
-              onClick={handleCalculate}
-              className={`w-full sm:w-auto ${siteConfig.forms.calculator.buttonColor} ${siteConfig.forms.calculator.buttonHoverColor}`}
-            >
-              {siteConfig.forms.calculator.buttonText}
-            </Button>
-          </div>
-
-          {children.length > 0 && (
-            <Timeline children={children} />
           )}
 
-          {result && (
-            <ResultsDisplay result={result} />
+          {step === 'children' && (
+            <motion.div
+              key="children"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              className="space-y-4"
+            >
+              <AnimatePresence>
+                {children.map(child => (
+                  <ChildForm
+                    key={child.id}
+                    child={child}
+                    onUpdate={handleUpdateChild}
+                    onRemove={handleRemoveChild}
+                    canRemove={children.length > 1}
+                  />
+                ))}
+              </AnimatePresence>
+
+              <Timeline children={children} />
+
+              <div className="space-y-4">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleAddChild}
+                  className="w-full"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Another Child
+                </Button>
+
+                <div className="flex gap-4">
+                  <Button
+                    onClick={() => setStep('info')}
+                    variant="outline"
+                    className="flex-1"
+                  >
+                    Previous
+                  </Button>
+                  <Button
+                    onClick={handleCalculate}
+                    className="flex-1"
+                    disabled={isLoading}
+                  >
+                    Calculate
+                  </Button>
+                </div>
+              </div>
+            </motion.div>
           )}
-        </div>
+
+          {step === 'results' && result && (
+            <motion.div
+              key="results"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="space-y-6"
+            >
+              <ResultsDisplay result={result} />
+              <Timeline children={children} />
+              
+              <div className="flex gap-4 mt-6">
+                <Button
+                  onClick={() => setStep('children')}
+                  variant="outline"
+                  className="flex-1"
+                >
+                  Previous
+                </Button>
+                <Button
+                  onClick={handleDownloadPDF}
+                  className="flex-1"
+                >
+                  Download PDF
+                </Button>
+                <Button
+                  onClick={handleReset}
+                  variant="destructive"
+                  className="flex-1"
+                >
+                  Reset
+                </Button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );
