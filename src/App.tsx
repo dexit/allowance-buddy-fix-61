@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import Index from "./pages/Index";
 import Admin from "./pages/Admin";
 import Auth from "./pages/Auth";
+import Embed from "./pages/Embed";
 import type { Session } from "@supabase/supabase-js";
 
 const queryClient = new QueryClient();
@@ -59,33 +60,23 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   return <>{children}</>;
 };
 
-// Create an embeddable widget component
-const EmbeddableWidget = () => {
+const App = () => {
+  // Check if the app is running in embedded mode
+  const isEmbedded = window.location.pathname === '/embed' || window.location.search.includes('embedded=true');
+
   return (
-    <div className="w-full h-full">
-      <Index />
-    </div>
-  );
-};
-
-// Check if the app is running in embedded mode
-const isEmbedded = window.location.search.includes('embedded=true');
-
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      {!isEmbedded && (
-        <>
-          <Toaster />
-          <Sonner />
-        </>
-      )}
-      <BrowserRouter>
-        {isEmbedded ? (
-          <EmbeddableWidget />
-        ) : (
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        {!isEmbedded && (
+          <>
+            <Toaster />
+            <Sonner />
+          </>
+        )}
+        <BrowserRouter>
           <Routes>
             <Route path="/" element={<Index />} />
+            <Route path="/embed" element={<Embed />} />
             <Route path="/auth" element={<Auth />} />
             <Route
               path="/admin"
@@ -96,10 +87,10 @@ const App = () => (
               }
             />
           </Routes>
-        )}
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+        </BrowserRouter>
+      </TooltipProvider>
+    </QueryClientProvider>
+  );
+};
 
 export default App;

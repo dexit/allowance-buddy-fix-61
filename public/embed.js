@@ -1,17 +1,54 @@
 (function() {
-  const script = document.createElement('script');
-  script.src = 'https://cdn.gpteng.co/gptengineer.js';
-  script.type = 'module';
-  document.head.appendChild(script);
+  // Create a unique ID for the container if not provided
+  function generateContainerId() {
+    return 'foster-care-calculator-' + Math.random().toString(36).substr(2, 9);
+  }
 
-  const iframe = document.createElement('iframe');
-  iframe.src = window.location.origin + '?embedded=true';
-  iframe.style.width = '100%';
-  iframe.style.height = '100%';
-  iframe.style.border = 'none';
-  
-  const container = document.getElementById('foster-care-calculator');
-  if (container) {
+  // Initialize the widget
+  function initWidget(containerId) {
+    // Add required styles
+    const style = document.createElement('style');
+    style.textContent = `
+      #${containerId} {
+        width: 100%;
+        height: 700px;
+        border: none;
+        overflow: hidden;
+      }
+    `;
+    document.head.appendChild(style);
+
+    // Create container if it doesn't exist
+    let container = document.getElementById(containerId);
+    if (!container) {
+      container = document.createElement('div');
+      container.id = containerId;
+      document.currentScript.parentElement.appendChild(container);
+    }
+
+    // Create and append iframe
+    const iframe = document.createElement('iframe');
+    iframe.src = window.location.origin + '/embed?embedded=true';
+    iframe.style.width = '100%';
+    iframe.style.height = '100%';
+    iframe.style.border = 'none';
     container.appendChild(iframe);
   }
+
+  // Handle script loading
+  function loadScript(src, callback) {
+    const script = document.createElement('script');
+    script.src = src;
+    script.type = 'module';
+    script.onload = callback;
+    document.head.appendChild(script);
+  }
+
+  // Main initialization
+  const containerId = document.currentScript.getAttribute('data-container-id') || generateContainerId();
+  
+  // Load GPT Engineer script first
+  loadScript('https://cdn.gpteng.co/gptengineer.js', function() {
+    initWidget(containerId);
+  });
 })();
