@@ -18,9 +18,11 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { generatePDF } from "@/lib/pdf";
+import { submitToHubspot } from "@/lib/hubspot";
 
 export default function Index() {
-  const [step, setStep] = useState<'userInfo' | 'children'>('userInfo');
+  const [step, setStep] = useState<'userInfo' | 'children' | 'results'>('userInfo');
   const [userInfo, setUserInfo] = useState<UserInfoFormData | null>(null);
   const [children, setChildren] = useState<ChildFormData[]>([
     {
@@ -67,14 +69,44 @@ export default function Index() {
     ));
   };
 
-  const handleCalculate = () => {
+  const handleCalculate = async () => {
     const calculatedResult = calculateTotalAllowance(children, false);
     setResult(calculatedResult);
+    setStep('results');
+    
+    // Submit to Hubspot
+    await submitToHubspot({
+      userInfo: userInfo!,
+      children,
+      result: calculatedResult
+    });
+    
     toast({
       title: "Calculation Complete",
       description: "Your foster care allowance has been calculated.",
       variant: "default",
     });
+  };
+
+  const handleDownloadPDF = () => {
+    generatePDF(result);
+    toast({
+      title: "PDF Generated",
+      description: "Your allowance summary has been downloaded.",
+      variant: "default",
+    });
+  };
+
+  const handleReset = () => {
+    setStep('userInfo');
+    setUserInfo(null);
+    setChildren([{
+      id: uuidv4(),
+      ageGroup: "0-4" as AgeGroup,
+      isSpecialCare: false,
+      weekIntervals: [{ start: 1, end: 52 }]
+    }]);
+    setResult(null);
   };
 
   return (
@@ -95,7 +127,7 @@ export default function Index() {
         </motion.div>
 
         <div className="space-y-8">
-          {step === 'userInfo' ? (
+          {step === 'userInfo' && (
             <Card className="border-2 border-primary/10">
               <CardHeader className="space-y-1">
                 <CardTitle className="text-2xl font-bold text-primary">
@@ -112,72 +144,85 @@ export default function Index() {
                 />
               </CardContent>
             </Card>
-          ) : (
+          )}
+
+          {step === 'children' && (
+            <Card className="border-2 border-primary/10">
+              <CardHeader className="space-y-1">
+                <CardTitle className="text-2xl font-bold text-primary">
+                  Children Details
+                </CardTitle>
+                <CardDescription>
+                  Add information about each child
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {children.map((child) => (
+                  <ChildForm
+                    key={child.id}
+                    child={child}
+                    onUpdate={handleUpdateChild}
+                    onRemove={handleRemoveChild}
+                    canRemove={children.length > 1}
+                  />
+                ))}
+
+                <div className="flex flex-col sm:flex-row gap-4 justify-between items-center mt-8">
+                  <Button
+                    onClick={handleAddChild}
+                    variant="outline"
+                    className="w-full sm:w-auto border-primary hover:bg-primary/10"
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Another Child
+                  </Button>
+                  <Button
+                    onClick={handleCalculate}
+                    className="w-full sm:w-auto bg-primary hover:bg-primary/90 text-primary-foreground"
+                  >
+                    Calculate Allowance
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {step === 'results' && result && (
             <>
               <Card className="border-2 border-primary/10">
-                <CardHeader className="space-y-1">
+                <CardHeader>
                   <CardTitle className="text-2xl font-bold text-primary">
-                    Children Details
+                    Your Allowance Results
                   </CardTitle>
-                  <CardDescription>
-                    Add information about each child
-                  </CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-6">
-                  {children.map((child) => (
-                    <ChildForm
-                      key={child.id}
-                      child={child}
-                      onUpdate={handleUpdateChild}
-                      onRemove={handleRemoveChild}
-                      canRemove={children.length > 1}
-                    />
-                  ))}
-
-                  <div className="flex flex-col sm:flex-row gap-4 justify-between items-center mt-8">
+                <CardContent>
+                  <ResultsDisplay result={result} />
+                  <Timeline children={children} />
+                  
+                  <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mt-8">
                     <Button
-                      onClick={handleAddChild}
+                      onClick={() => setStep('children')}
                       variant="outline"
                       className="w-full sm:w-auto border-primary hover:bg-primary/10"
                     >
-                      <Plus className="h-4 w-4 mr-2" />
-                      Add Another Child
+                      Go Back
                     </Button>
                     <Button
-                      onClick={handleCalculate}
+                      onClick={handleDownloadPDF}
                       className="w-full sm:w-auto bg-primary hover:bg-primary/90 text-primary-foreground"
                     >
-                      Calculate Allowance
+                      Download PDF
+                    </Button>
+                    <Button
+                      onClick={handleReset}
+                      variant="destructive"
+                      className="w-full sm:w-auto"
+                    >
+                      Reset Form
                     </Button>
                   </div>
                 </CardContent>
               </Card>
-
-              {children.length > 0 && (
-                <Card className="border-2 border-primary/10">
-                  <CardHeader>
-                    <CardTitle className="text-2xl font-bold text-primary">
-                      Timeline View
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <Timeline children={children} />
-                  </CardContent>
-                </Card>
-              )}
-
-              {result && (
-                <Card className="border-2 border-primary/10">
-                  <CardHeader>
-                    <CardTitle className="text-2xl font-bold text-primary">
-                      Calculation Results
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <ResultsDisplay result={result} />
-                  </CardContent>
-                </Card>
-              )}
             </>
           )}
         </div>

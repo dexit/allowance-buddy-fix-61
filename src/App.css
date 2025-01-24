@@ -40,3 +40,21 @@
 .read-the-docs {
   color: #888;
 }
+
+.embedded-calculator {
+  padding: 1rem;
+  max-width: 100%;
+  margin: 0 auto;
+}
+
+body.embedded {
+  margin: 0;
+  padding: 0;
+  background: transparent;
+}
+
+body.embedded #root {
+  padding: 0;
+  margin: 0;
+  max-width: 100%;
+}
