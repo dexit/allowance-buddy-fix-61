@@ -8,11 +8,10 @@ import { ResultsDisplay } from "@/components/foster/ResultsDisplay";
 import { Timeline } from "@/components/foster/Timeline";
 import { motion } from "framer-motion";
 import { v4 as uuidv4 } from "uuid";
-import { ChildFormData } from "@/lib/types";
 import { siteConfig } from "@/config/theme";
 
 export default function Index() {
-  const [children, setChildren] = useState<ChildFormData[]>([
+  const [children, setChildren] = useState([
     { 
       id: uuidv4(), 
       ageGroup: "0-4", 
@@ -20,7 +19,7 @@ export default function Index() {
       weekIntervals: [{ start: 1, end: 52 }]
     }
   ]);
-  const [result, setResult] = useState<any>(null);
+  const [result, setResult] = useState(null);
   const { toast } = useToast();
 
   const handleAddChild = () => {
@@ -52,7 +51,7 @@ export default function Index() {
     setResult(calculatedResult);
     toast({
       title: "Calculation Complete",
-      description: "Your foster care allowance has been calculated.",
+      description: "Your foster care allowance has been calculated."
     });
   };
 
@@ -80,7 +79,7 @@ export default function Index() {
         </motion.div>
 
         <div className="space-y-6">
-          {children.map((child, index) => (
+          {children.map((child) => (
             <ChildForm
               key={child.id}
               child={child}
