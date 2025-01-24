@@ -8,18 +8,19 @@ import { ResultsDisplay } from "@/components/foster/ResultsDisplay";
 import { Timeline } from "@/components/foster/Timeline";
 import { motion } from "framer-motion";
 import { v4 as uuidv4 } from "uuid";
+import { ChildFormData, AgeGroup } from "@/lib/types";
 import { siteConfig } from "@/config/theme";
 
 export default function Index() {
-  const [children, setChildren] = useState([
+  const [children, setChildren] = useState<ChildFormData[]>([
     { 
       id: uuidv4(), 
-      ageGroup: "0-4", 
+      ageGroup: "0-4" as AgeGroup, 
       isSpecialCare: false, 
       weekIntervals: [{ start: 1, end: 52 }]
     }
   ]);
-  const [result, setResult] = useState(null);
+  const [result, setResult] = useState<any>(null);
   const { toast } = useToast();
 
   const handleAddChild = () => {
@@ -27,7 +28,7 @@ export default function Index() {
       ...children,
       { 
         id: uuidv4(), 
-        ageGroup: "0-4", 
+        ageGroup: "0-4" as AgeGroup, 
         isSpecialCare: false, 
         weekIntervals: [{ start: 1, end: 52 }]
       }
