@@ -1,9 +1,9 @@
 interface FormData {
   userInfo: {
-    fullName: string;
+    name: string;
     email: string;
     phone: string;
-    experience: string;
+    isExperiencedCarer: boolean;
   };
   children: any[];
   result: any;

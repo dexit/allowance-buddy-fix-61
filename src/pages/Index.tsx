@@ -74,9 +74,14 @@ export default function Index() {
     setResult(calculatedResult);
     setStep('results');
     
-    // Submit to Hubspot
+    // Submit to Hubspot with correct data structure
     await submitToHubspot({
-      userInfo: userInfo!,
+      userInfo: {
+        name: userInfo!.name,
+        email: userInfo!.email,
+        phone: userInfo!.phone,
+        isExperiencedCarer: userInfo!.isExperiencedCarer
+      },
       children,
       result: calculatedResult
     });
