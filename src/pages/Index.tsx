@@ -11,6 +11,13 @@ import { v4 as uuidv4 } from "uuid";
 import { siteConfig } from "@/config/theme";
 import { UserInfoForm, UserInfoFormData } from "@/components/foster/UserInfoForm";
 import { ChildFormData, AgeGroup } from "@/lib/types";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 
 export default function Index() {
   const [step, setStep] = useState<'userInfo' | 'children'>('userInfo');
@@ -31,7 +38,8 @@ export default function Index() {
     setStep('children');
     toast({
       title: "Information Saved",
-      description: "Please proceed with adding children details."
+      description: "Please proceed with adding children details.",
+      variant: "default",
     });
   };
 
@@ -64,12 +72,13 @@ export default function Index() {
     setResult(calculatedResult);
     toast({
       title: "Calculation Complete",
-      description: "Your foster care allowance has been calculated."
+      description: "Your foster care allowance has been calculated.",
+      variant: "default",
     });
   };
 
   return (
-    <div className="min-h-screen py-12 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-white to-gray-50">
+    <div className="min-h-screen py-12 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-background to-muted/50">
       <div className="max-w-4xl mx-auto">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -77,66 +86,97 @@ export default function Index() {
           transition={{ duration: 0.3 }}
           className="text-center mb-12"
         >
-          <h1 className="text-4xl font-bold tracking-tight text-gray-900 mb-4">
+          <h1 className="text-4xl font-bold tracking-tight text-primary mb-4">
             {siteConfig.name}
           </h1>
-          <p className="text-xl text-gray-600">
+          <p className="text-xl text-muted-foreground">
             {siteConfig.description}
           </p>
         </motion.div>
 
         <div className="space-y-8">
           {step === 'userInfo' ? (
-            <div className="bg-white rounded-lg shadow-lg p-8">
-              <h2 className="text-2xl font-semibold text-gray-900 mb-6">
-                Personal Information
-              </h2>
-              <UserInfoForm 
-                onSubmit={handleUserInfoSubmit}
-                isLoading={false}
-              />
-            </div>
+            <Card className="border-2 border-primary/10">
+              <CardHeader className="space-y-1">
+                <CardTitle className="text-2xl font-bold text-primary">
+                  Personal Information
+                </CardTitle>
+                <CardDescription>
+                  Please provide your details to get started
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <UserInfoForm 
+                  onSubmit={handleUserInfoSubmit}
+                  isLoading={false}
+                />
+              </CardContent>
+            </Card>
           ) : (
             <>
-              <div className="bg-white rounded-lg shadow-lg p-8">
-                {children.map((child) => (
-                  <ChildForm
-                    key={child.id}
-                    child={child}
-                    onUpdate={handleUpdateChild}
-                    onRemove={handleRemoveChild}
-                    canRemove={children.length > 1}
-                  />
-                ))}
+              <Card className="border-2 border-primary/10">
+                <CardHeader className="space-y-1">
+                  <CardTitle className="text-2xl font-bold text-primary">
+                    Children Details
+                  </CardTitle>
+                  <CardDescription>
+                    Add information about each child
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  {children.map((child) => (
+                    <ChildForm
+                      key={child.id}
+                      child={child}
+                      onUpdate={handleUpdateChild}
+                      onRemove={handleRemoveChild}
+                      canRemove={children.length > 1}
+                    />
+                  ))}
 
-                <div className="flex flex-col sm:flex-row gap-4 justify-between items-center mt-8">
-                  <Button
-                    onClick={handleAddChild}
-                    variant="outline"
-                    className="w-full sm:w-auto border-primary hover:bg-primary/10"
-                  >
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add Another Child
-                  </Button>
-                  <Button
-                    onClick={handleCalculate}
-                    className="w-full sm:w-auto bg-primary hover:bg-primary/90 text-white"
-                  >
-                    Calculate Allowance
-                  </Button>
-                </div>
-              </div>
+                  <div className="flex flex-col sm:flex-row gap-4 justify-between items-center mt-8">
+                    <Button
+                      onClick={handleAddChild}
+                      variant="outline"
+                      className="w-full sm:w-auto border-primary hover:bg-primary/10"
+                    >
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add Another Child
+                    </Button>
+                    <Button
+                      onClick={handleCalculate}
+                      className="w-full sm:w-auto bg-primary hover:bg-primary/90 text-primary-foreground"
+                    >
+                      Calculate Allowance
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
 
               {children.length > 0 && (
-                <div className="bg-white rounded-lg shadow-lg p-8">
-                  <Timeline children={children} />
-                </div>
+                <Card className="border-2 border-primary/10">
+                  <CardHeader>
+                    <CardTitle className="text-2xl font-bold text-primary">
+                      Timeline View
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <Timeline children={children} />
+                  </CardContent>
+                </Card>
               )}
 
               {result && (
-                <div className="bg-white rounded-lg shadow-lg p-8">
-                  <ResultsDisplay result={result} />
-                </div>
+                <Card className="border-2 border-primary/10">
+                  <CardHeader>
+                    <CardTitle className="text-2xl font-bold text-primary">
+                      Calculation Results
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <ResultsDisplay result={result} />
+                  </CardContent>
+                </Card>
               )}
             </>
           )}
