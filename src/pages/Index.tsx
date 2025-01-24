@@ -69,12 +69,7 @@ export default function Index() {
   };
 
   return (
-    <div 
-      className="min-h-screen py-12 px-4 sm:px-6 lg:px-8"
-      style={{ 
-        background: `linear-gradient(to bottom, ${siteConfig.colors.background.primary}, ${siteConfig.colors.background.secondary})`
-      }}
-    >
+    <div className="min-h-screen py-12 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-white to-gray-50">
       <div className="max-w-4xl mx-auto">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -82,66 +77,66 @@ export default function Index() {
           transition={{ duration: 0.3 }}
           className="text-center mb-12"
         >
-          <h1 
-            className="text-4xl font-bold tracking-tight mb-4"
-            style={{ color: siteConfig.colors.text.primary }}
-          >
+          <h1 className="text-4xl font-bold tracking-tight text-gray-900 mb-4">
             {siteConfig.name}
           </h1>
-          <p 
-            className="text-xl"
-            style={{ color: siteConfig.colors.text.secondary }}
-          >
+          <p className="text-xl text-gray-600">
             {siteConfig.description}
           </p>
         </motion.div>
 
-        <div className="space-y-6">
+        <div className="space-y-8">
           {step === 'userInfo' ? (
-            <UserInfoForm onSubmit={handleUserInfoSubmit} />
+            <div className="bg-white rounded-lg shadow-lg p-8">
+              <h2 className="text-2xl font-semibold text-gray-900 mb-6">
+                Personal Information
+              </h2>
+              <UserInfoForm 
+                onSubmit={handleUserInfoSubmit}
+                isLoading={false}
+              />
+            </div>
           ) : (
             <>
-              {children.map((child) => (
-                <ChildForm
-                  key={child.id}
-                  child={child}
-                  onUpdate={handleUpdateChild}
-                  onRemove={handleRemoveChild}
-                  canRemove={children.length > 1}
-                />
-              ))}
+              <div className="bg-white rounded-lg shadow-lg p-8">
+                {children.map((child) => (
+                  <ChildForm
+                    key={child.id}
+                    child={child}
+                    onUpdate={handleUpdateChild}
+                    onRemove={handleRemoveChild}
+                    canRemove={children.length > 1}
+                  />
+                ))}
 
-              <div className="flex justify-between items-center">
-                <Button
-                  onClick={handleAddChild}
-                  variant="outline"
-                  className="w-full sm:w-auto"
-                  style={{
-                    borderColor: siteConfig.colors.primary,
-                    color: siteConfig.colors.text.primary
-                  }}
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add Another Child
-                </Button>
-                <Button
-                  onClick={handleCalculate}
-                  className="w-full sm:w-auto"
-                  style={{
-                    backgroundColor: siteConfig.colors.primary,
-                    color: siteConfig.colors.background.primary
-                  }}
-                >
-                  Calculate Allowance
-                </Button>
+                <div className="flex flex-col sm:flex-row gap-4 justify-between items-center mt-8">
+                  <Button
+                    onClick={handleAddChild}
+                    variant="outline"
+                    className="w-full sm:w-auto border-primary hover:bg-primary/10"
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Another Child
+                  </Button>
+                  <Button
+                    onClick={handleCalculate}
+                    className="w-full sm:w-auto bg-primary hover:bg-primary/90 text-white"
+                  >
+                    Calculate Allowance
+                  </Button>
+                </div>
               </div>
 
               {children.length > 0 && (
-                <Timeline children={children} />
+                <div className="bg-white rounded-lg shadow-lg p-8">
+                  <Timeline children={children} />
+                </div>
               )}
 
               {result && (
-                <ResultsDisplay result={result} />
+                <div className="bg-white rounded-lg shadow-lg p-8">
+                  <ResultsDisplay result={result} />
+                </div>
               )}
             </>
           )}
