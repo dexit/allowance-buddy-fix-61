@@ -99,3 +99,16 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Embedded calculator specific styles */
+.embedded-calculator {
+  @apply bg-transparent shadow-none;
+}
+
+.embedded body {
+  @apply bg-transparent;
+}
+
+.embedded .embedded-calculator {
+  @apply p-0;
+}

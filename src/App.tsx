@@ -86,6 +86,8 @@ const App = () => {
                 </ProtectedRoute>
               }
             />
+            {/* Catch-all route for Vercel */}
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </BrowserRouter>
       </TooltipProvider>

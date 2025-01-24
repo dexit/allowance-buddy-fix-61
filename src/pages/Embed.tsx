@@ -3,7 +3,6 @@ import Index from './Index';
 
 export default function Embed() {
   useEffect(() => {
-    // Add any embed-specific initialization here
     document.body.classList.add('embedded');
     
     return () => {
@@ -11,5 +10,9 @@ export default function Embed() {
     };
   }, []);
 
-  return <Index />;
+  return (
+    <div className="embedded-calculator">
+      <Index />
+    </div>
+  );
 }
