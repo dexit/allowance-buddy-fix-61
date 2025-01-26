@@ -2,7 +2,8 @@ import { Form, FormField, FormItem, FormLabel, FormControl } from "@/components/
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useForm } from "react-hook-form";
 import { motion } from "framer-motion";
-import { AGE_GROUPS, REGIONS, type AgeGroup, type Region } from "@/lib/calculator";
+import { AGE_GROUPS, REGIONS } from "@/lib/calculator";
+import { AgeGroup, Region } from "@/lib/types";
 import { Minus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { WeekIntervalInput } from "./WeekIntervalInput";
