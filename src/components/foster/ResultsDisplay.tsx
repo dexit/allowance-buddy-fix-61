@@ -11,11 +11,6 @@ interface ResultsDisplayProps {
       ageRelatedElement: number;
       specialCareAmount: number;
       totalAllowance: number;
-      weekIntervals?: Array<{
-        start: number;
-        end: number;
-        intervalTotal: number;
-      }>;
     }>;
     weeklyTotal: number;
     monthlyTotal: number;
@@ -39,61 +34,66 @@ export function ResultsDisplay({ result, childrenData }: ResultsDisplayProps) {
       transition={{ duration: 0.3 }}
       className="space-y-6"
     >
-      {result.children.map((child, index) => (
-        <motion.div
-          key={index}
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: index * 0.1 }}
-        >
-          <Card>
-            <CardHeader>
-              <CardTitle>Child {index + 1} (Age Group {child.ageGroup})</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2 text-sm">
-                <p className="flex justify-between font-medium text-base">
-                  <span>Base Weekly Rate:</span>
-                  <span>{formatCurrency(child.baseAllowance)}</span>
-                </p>
-                
-                {childrenData[index].weekIntervals.map((interval, intervalIndex) => (
-                  <Card key={intervalIndex} className="p-4 bg-muted/30">
-                    <h4 className="font-medium mb-2">Interval {intervalIndex + 1}</h4>
-                    <div className="space-y-1 text-sm">
-                      <p className="flex justify-between">
-                        <span>Weeks:</span>
-                        <span>Week {interval.start} - Week {interval.end} ({interval.end - interval.start + 1} weeks)</span>
-                      </p>
-                      <p className="flex justify-between">
-                        <span>Base Rate × Weeks:</span>
-                        <span>{formatCurrency(child.baseAllowance * (interval.end - interval.start + 1))}</span>
-                      </p>
-                      {child.specialCareAmount > 0 && (
-                        <p className="flex justify-between">
-                          <span>Special Care Amount:</span>
-                          <span>{formatCurrency(child.specialCareAmount * (interval.end - interval.start + 1))}</span>
-                        </p>
-                      )}
-                      <p className="flex justify-between font-medium border-t pt-1 mt-1">
-                        <span>Interval Total:</span>
-                        <span>{formatCurrency((child.baseAllowance + child.specialCareAmount) * (interval.end - interval.start + 1))}</span>
-                      </p>
-                    </div>
-                  </Card>
-                ))}
+      {result.children.map((child, index) => {
+        const childData = childrenData[index];
+        if (!childData) return null;
 
-                <div className="border-t pt-2 mt-4">
-                  <p className="flex justify-between text-base font-semibold">
-                    <span>Child Total:</span>
-                    <span>{formatCurrency(child.totalAllowance)}</span>
+        return (
+          <motion.div
+            key={childData.id}
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: index * 0.1 }}
+          >
+            <Card>
+              <CardHeader>
+                <CardTitle>Child {index + 1} (Age Group {child.ageGroup})</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2 text-sm">
+                  <p className="flex justify-between font-medium text-base">
+                    <span>Base Weekly Rate:</span>
+                    <span>{formatCurrency(child.baseAllowance)}</span>
                   </p>
+                  
+                  {childData.weekIntervals.map((interval, intervalIndex) => (
+                    <Card key={intervalIndex} className="p-4 bg-muted/30">
+                      <h4 className="font-medium mb-2">Interval {intervalIndex + 1}</h4>
+                      <div className="space-y-1 text-sm">
+                        <p className="flex justify-between">
+                          <span>Weeks:</span>
+                          <span>Week {interval.start} - Week {interval.end} ({interval.end - interval.start + 1} weeks)</span>
+                        </p>
+                        <p className="flex justify-between">
+                          <span>Base Rate × Weeks:</span>
+                          <span>{formatCurrency(child.baseAllowance * (interval.end - interval.start + 1))}</span>
+                        </p>
+                        {child.specialCareAmount > 0 && (
+                          <p className="flex justify-between">
+                            <span>Special Care Amount:</span>
+                            <span>{formatCurrency(child.specialCareAmount * (interval.end - interval.start + 1))}</span>
+                          </p>
+                        )}
+                        <p className="flex justify-between font-medium border-t pt-1 mt-1">
+                          <span>Interval Total:</span>
+                          <span>{formatCurrency((child.baseAllowance + child.specialCareAmount) * (interval.end - interval.start + 1))}</span>
+                        </p>
+                      </div>
+                    </Card>
+                  ))}
+
+                  <div className="border-t pt-2 mt-4">
+                    <p className="flex justify-between text-base font-semibold">
+                      <span>Child Total:</span>
+                      <span>{formatCurrency(child.totalAllowance)}</span>
+                    </p>
+                  </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
-      ))}
+              </CardContent>
+            </Card>
+          </motion.div>
+        );
+      })}
 
       <Timeline children={childrenData} showLegend={true} />
 
