@@ -78,7 +78,7 @@ export default function Index() {
     setResult(calculatedResult);
     setStep('results');
     
-    // Submit to Hubspot with correct data structure
+    // Submit to Hubspot with correct data structure and environment
     await submitToHubspot({
       userInfo: {
         name: userInfo.name,
@@ -88,7 +88,7 @@ export default function Index() {
       },
       children,
       result: calculatedResult
-    });
+    }, process.env.NODE_ENV);
     
     toast({
       title: "Calculation Complete",
