@@ -72,17 +72,19 @@ export default function Index() {
   };
 
   const handleCalculate = async () => {
-    const calculatedResult = calculateTotalAllowance(children, userInfo?.isExperiencedCarer || false);
+    if (!userInfo) return; // Guard clause to ensure userInfo exists
+    
+    const calculatedResult = calculateTotalAllowance(children, userInfo.isExperiencedCarer);
     setResult(calculatedResult);
     setStep('results');
     
     // Submit to Hubspot with correct data structure
     await submitToHubspot({
       userInfo: {
-        name: userInfo!.name,
-        email: userInfo!.email,
-        phone: userInfo!.phone,
-        isExperiencedCarer: userInfo!.isExperiencedCarer
+        name: userInfo.name,
+        email: userInfo.email,
+        phone: userInfo.phone,
+        isExperiencedCarer: userInfo.isExperiencedCarer
       },
       children,
       result: calculatedResult
