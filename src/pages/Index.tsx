@@ -18,7 +18,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { generatePDF } from "@/lib/pdf";
 import { submitToHubspot } from "@/lib/hubspot";
 
 export default function Index() {
