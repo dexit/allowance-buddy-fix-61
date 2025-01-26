@@ -51,33 +51,26 @@ export function ResultsDisplay({ result, childrenData }: ResultsDisplayProps) {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2 text-sm">
-                  <p className="flex justify-between font-medium text-base">
-                    <span>Base Weekly Rate:</span>
-                    <span>{formatCurrency(child.baseAllowance)}</span>
-                  </p>
-                  
                   {childData.weekIntervals.map((interval, intervalIndex) => (
                     <Card key={intervalIndex} className="p-4 bg-muted/30">
-                      <h4 className="font-medium mb-2">Interval {intervalIndex + 1}</h4>
-                      <div className="space-y-1 text-sm">
-                        <p className="flex justify-between">
-                          <span>Weeks:</span>
-                          <span>Week {interval.start} - Week {interval.end} ({interval.end - interval.start + 1} weeks)</span>
-                        </p>
-                        <p className="flex justify-between">
-                          <span>Base Rate × Weeks:</span>
-                          <span>{formatCurrency(child.baseAllowance * (interval.end - interval.start + 1))}</span>
-                        </p>
-                        {child.specialCareAmount > 0 && (
-                          <p className="flex justify-between">
-                            <span>Special Care Amount:</span>
-                            <span>{formatCurrency(child.specialCareAmount * (interval.end - interval.start + 1))}</span>
+                      <h4 className="font-medium mb-3 text-base">Interval/Period {intervalIndex + 1}</h4>
+                      <div className="space-y-2">
+                        <div className="bg-muted/20 p-3 rounded-lg">
+                          <p className="flex justify-between mb-1">
+                            <span>Week {interval.start} - Week {interval.end}</span>
                           </p>
-                        )}
-                        <p className="flex justify-between font-medium border-t pt-1 mt-1">
-                          <span>Interval Total:</span>
-                          <span>{formatCurrency((child.baseAllowance + child.specialCareAmount) * (interval.end - interval.start + 1))}</span>
-                        </p>
+                          <p className="text-sm text-muted-foreground mb-2">
+                            Total: {interval.end - interval.start + 1} Weeks
+                          </p>
+                          <p className="flex justify-between text-sm mb-1">
+                            <span>Weekly base rate:</span>
+                            <span>{formatCurrency(child.baseAllowance)}</span>
+                          </p>
+                          <p className="flex justify-between font-medium border-t pt-2 mt-2">
+                            <span>Interval/Period {intervalIndex + 1} TOTAL:</span>
+                            <span>{formatCurrency(child.baseAllowance * (interval.end - interval.start + 1))}</span>
+                          </p>
+                        </div>
                       </div>
                     </Card>
                   ))}
