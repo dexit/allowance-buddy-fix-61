@@ -50,7 +50,7 @@ export const calculateAllowanceForChild = (
   const baseAllowance = ALLOWANCE_RATES[ageGroup][region];
   const ageRelatedElement = 0; // Removed as it's now included in base rate
   const baseTotal = baseAllowance;
-  const specialCareAmount = isSpecialCare ? baseTotal * 0.5 : 0; // 50% additional for special care
+  const specialCareAmount = isSpecialCare ? Number(baseTotal) * 0.5 : 0; // Added Number() to ensure numeric operation
   const totalAllowance = baseTotal + specialCareAmount;
 
   return {

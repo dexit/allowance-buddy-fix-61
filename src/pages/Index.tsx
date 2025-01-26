@@ -27,9 +27,10 @@ export default function Index() {
   const [children, setChildren] = useState<ChildFormData[]>([
     {
       id: uuidv4(),
-      ageGroup: "0-4" as AgeGroup,
+      ageGroup: "0-2" as AgeGroup,
       isSpecialCare: false,
-      weekIntervals: [{ start: 1, end: 52 }]
+      weekIntervals: [{ start: 1, end: 52 }],
+      region: "London" as Region // Added default region
     }
   ]);
   const [result, setResult] = useState<any>(null);
@@ -50,9 +51,10 @@ export default function Index() {
       ...children,
       {
         id: uuidv4(),
-        ageGroup: "0-4" as AgeGroup,
+        ageGroup: "0-2" as AgeGroup,
         isSpecialCare: false,
-        weekIntervals: [{ start: 1, end: 52 }]
+        weekIntervals: [{ start: 1, end: 52 }],
+        region: "London" as Region // Added default region
       }
     ]);
   };
@@ -107,9 +109,10 @@ export default function Index() {
     setUserInfo(null);
     setChildren([{
       id: uuidv4(),
-      ageGroup: "0-4" as AgeGroup,
+      ageGroup: "0-2" as AgeGroup,
       isSpecialCare: false,
-      weekIntervals: [{ start: 1, end: 52 }]
+      weekIntervals: [{ start: 1, end: 52 }],
+      region: "London" as Region // Added default region
     }]);
     setResult(null);
   };
