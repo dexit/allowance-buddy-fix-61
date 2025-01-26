@@ -8,6 +8,7 @@ export interface ChildFormData {
   ageGroup: AgeGroup;
   isSpecialCare: boolean;
   weekIntervals: WeekInterval[];
+  region: Region;
 }
 
 export interface UserInfoFormData {
@@ -17,4 +18,5 @@ export interface UserInfoFormData {
   isExperiencedCarer: boolean;
 }
 
-export type AgeGroup = "0-4" | "5-10" | "11-15" | "16-17";
+export type AgeGroup = "0-2" | "3-4" | "5-10" | "11-15" | "16-17";
+export type Region = "London" | "South East" | "Rest of England";

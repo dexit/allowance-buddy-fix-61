@@ -2,7 +2,7 @@ import { Form, FormField, FormItem, FormLabel, FormControl } from "@/components/
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useForm } from "react-hook-form";
 import { motion } from "framer-motion";
-import { AGE_GROUPS, type AgeGroup } from "@/lib/calculator";
+import { AGE_GROUPS, REGIONS, type AgeGroup, type Region } from "@/lib/calculator";
 import { Minus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { WeekIntervalInput } from "./WeekIntervalInput";
@@ -61,6 +61,31 @@ export function ChildForm({ child, onUpdate, onRemove, canRemove }: ChildFormPro
                     {AGE_GROUPS.map((ageGroup) => (
                       <SelectItem key={ageGroup} value={ageGroup}>
                         {ageGroup}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="region"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Region</FormLabel>
+                <Select
+                  value={child.region}
+                  onValueChange={(value) => onUpdate(child.id, { region: value as Region })}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {REGIONS.map((region) => (
+                      <SelectItem key={region} value={region}>
+                        {region}
                       </SelectItem>
                     ))}
                   </SelectContent>
