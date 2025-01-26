@@ -72,7 +72,7 @@ export default function Index() {
   };
 
   const handleCalculate = async () => {
-    const calculatedResult = calculateTotalAllowance(children, false);
+    const calculatedResult = calculateTotalAllowance(children, userInfo?.isExperiencedCarer || false);
     setResult(calculatedResult);
     setStep('results');
     
@@ -204,7 +204,7 @@ export default function Index() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <ResultsDisplay result={result} />
+                  <ResultsDisplay result={result} childrenData={children} />
                   <Timeline children={children} />
                   
                   <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mt-8">
