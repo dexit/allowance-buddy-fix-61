@@ -78,7 +78,7 @@ export default function Index() {
     setResult(calculatedResult);
     setStep('results');
     
-    await submitToHubspot({
+    const response = await submitToHubspot({
       userInfo: {
         name: userInfo.name,
         email: userInfo.email,
@@ -90,9 +90,9 @@ export default function Index() {
     });
     
     toast({
-      title: "Calculation Complete",
-      description: "Your foster care allowance has been calculated.",
-      variant: "default",
+      title: response.status === 'success' ? "Calculation Complete" : "Warning",
+      description: response.message || "Your foster care allowance has been calculated.",
+      variant: response.status === 'success' ? "default" : "destructive",
     });
   };
 
