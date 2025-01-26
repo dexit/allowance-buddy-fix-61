@@ -11,13 +11,13 @@ interface FormData {
 
 export const submitToHubspot = async (data: FormData, environment: string = 'production') => {
   // If HubSpot isn't configured, just log the data
-  if (!process.env.HUBSPOT_PORTAL_ID || !process.env.HUBSPOT_FORM_ID) {
+  if (!import.meta.env.VITE_HUBSPOT_PORTAL_ID || !import.meta.env.VITE_HUBSPOT_FORM_ID) {
     console.log('HubSpot not configured. Form data:', data);
     return { status: 'success', message: 'Data logged (HubSpot not configured)' };
   }
 
   try {
-    const response = await fetch(`https://api.hsforms.com/submissions/v3/integration/submit/${process.env.HUBSPOT_PORTAL_ID}/${process.env.HUBSPOT_FORM_ID}`, {
+    const response = await fetch(`https://api.hsforms.com/submissions/v3/integration/submit/${import.meta.env.VITE_HUBSPOT_PORTAL_ID}/${import.meta.env.VITE_HUBSPOT_FORM_ID}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
