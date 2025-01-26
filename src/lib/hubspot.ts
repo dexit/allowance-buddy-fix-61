@@ -9,7 +9,7 @@ interface FormData {
   result: any;
 }
 
-export const submitToHubspot = async (data: FormData) => {
+export const submitToHubspot = async (data: FormData, environment: string = 'production') => {
   try {
     const response = await fetch('https://api.hsforms.com/submissions/v3/integration/submit/YOUR_PORTAL_ID/YOUR_FORM_ID', {
       method: 'POST',
