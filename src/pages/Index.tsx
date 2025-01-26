@@ -78,7 +78,6 @@ export default function Index() {
     setResult(calculatedResult);
     setStep('results');
     
-    // Submit to Hubspot with correct data structure
     await submitToHubspot({
       userInfo: {
         name: userInfo.name,
