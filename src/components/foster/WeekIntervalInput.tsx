@@ -5,6 +5,7 @@ import { Plus, Minus } from "lucide-react";
 import { WeekInterval } from "@/lib/types";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { motion, AnimatePresence } from "framer-motion";
+import { Label } from "@/components/ui/label";
 
 interface WeekIntervalInputProps {
   intervals: WeekInterval[];
@@ -46,7 +47,7 @@ export function WeekIntervalInput({ intervals, onChange }: WeekIntervalInputProp
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <span className="text-sm font-medium">Week Intervals</span>
+        <Label className="text-sm font-medium">Weeks in Care</Label>
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
@@ -57,12 +58,12 @@ export function WeekIntervalInput({ intervals, onChange }: WeekIntervalInputProp
                 onClick={addInterval}
                 disabled={calculateTotalWeeks(intervals) >= 52}
               >
-                <Plus className="h-4 w-4" />
-                Add Interval
+                <Plus className="h-4 w-4 mr-2" />
+                Add Period
               </Button>
             </TooltipTrigger>
             <TooltipContent>
-              <p>Add a new week interval (max 52 weeks total)</p>
+              <p>Add a new care period (max 52 weeks total)</p>
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
@@ -75,33 +76,47 @@ export function WeekIntervalInput({ intervals, onChange }: WeekIntervalInputProp
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="flex items-center gap-2"
+            className="flex flex-col gap-2 p-4 border rounded-lg bg-muted/30"
           >
-            <Input
-              type="number"
-              min={1}
-              max={52}
-              value={interval.start}
-              onChange={(e) => updateInterval(index, "start", parseInt(e.target.value))}
-              className="w-20"
-            />
-            <span>to</span>
-            <Input
-              type="number"
-              min={interval.start}
-              max={52}
-              value={interval.end}
-              onChange={(e) => updateInterval(index, "end", parseInt(e.target.value))}
-              className="w-20"
-            />
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={() => removeInterval(index)}
-            >
-              <Minus className="h-4 w-4" />
-            </Button>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm font-medium">Care Period {index + 1}</span>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => removeInterval(index)}
+                className="h-8 w-8 p-0"
+              >
+                <Minus className="h-4 w-4" />
+              </Button>
+            </div>
+            <div className="flex items-center gap-4">
+              <div className="flex-1">
+                <Label className="text-xs mb-1">Start Week</Label>
+                <Input
+                  type="number"
+                  min={1}
+                  max={52}
+                  value={interval.start}
+                  onChange={(e) => updateInterval(index, "start", parseInt(e.target.value))}
+                  className="w-full"
+                />
+              </div>
+              <div className="flex-1">
+                <Label className="text-xs mb-1">End Week</Label>
+                <Input
+                  type="number"
+                  min={interval.start}
+                  max={52}
+                  value={interval.end}
+                  onChange={(e) => updateInterval(index, "end", parseInt(e.target.value))}
+                  className="w-full"
+                />
+              </div>
+            </div>
+            <div className="text-xs text-muted-foreground mt-1">
+              Duration: {interval.end - interval.start + 1} weeks
+            </div>
           </motion.div>
         ))}
       </AnimatePresence>
@@ -110,9 +125,10 @@ export function WeekIntervalInput({ intervals, onChange }: WeekIntervalInputProp
         <p className="text-sm text-destructive">{error}</p>
       )}
 
-      <p className="text-sm text-muted-foreground">
-        Total weeks: {calculateTotalWeeks(intervals)}
-      </p>
+      <div className="flex justify-between items-center text-sm text-muted-foreground">
+        <span>Total weeks in care:</span>
+        <span className="font-medium">{calculateTotalWeeks(intervals)}</span>
+      </div>
     </div>
   );
 }
