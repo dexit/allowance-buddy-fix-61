@@ -1,5 +1,7 @@
 import { motion } from "framer-motion";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Timeline } from "./Timeline";
+import { ChildFormData } from "@/lib/types";
 
 interface ResultsDisplayProps {
   result: {
@@ -9,14 +11,20 @@ interface ResultsDisplayProps {
       ageRelatedElement: number;
       specialCareAmount: number;
       totalAllowance: number;
+      weekIntervals?: Array<{
+        start: number;
+        end: number;
+        intervalTotal: number;
+      }>;
     }>;
     weeklyTotal: number;
     monthlyTotal: number;
     yearlyTotal: number;
   };
+  childrenData: ChildFormData[];
 }
 
-export function ResultsDisplay({ result }: ResultsDisplayProps) {
+export function ResultsDisplay({ result, childrenData }: ResultsDisplayProps) {
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-GB', {
       style: 'currency',
@@ -42,29 +50,42 @@ export function ResultsDisplay({ result }: ResultsDisplayProps) {
             <CardHeader>
               <CardTitle>Child {index + 1} (Age Group {child.ageGroup})</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-3">
+            <CardContent className="space-y-4">
               <div className="space-y-2 text-sm">
-                {child.baseAllowance > 0 && (
-                  <p className="flex justify-between">
-                    <span>Base Rate:</span>
-                    <span className="font-medium">{formatCurrency(child.baseAllowance)}</span>
-                  </p>
-                )}
-                {child.ageRelatedElement > 0 && (
-                  <p className="flex justify-between">
-                    <span>Age-Related Element:</span>
-                    <span className="font-medium">{formatCurrency(child.ageRelatedElement)}</span>
-                  </p>
-                )}
-                {child.specialCareAmount > 0 && (
-                  <p className="flex justify-between">
-                    <span>Special Care Amount:</span>
-                    <span className="font-medium">{formatCurrency(child.specialCareAmount)}</span>
-                  </p>
-                )}
-                <div className="border-t pt-2">
+                <p className="flex justify-between font-medium text-base">
+                  <span>Base Weekly Rate:</span>
+                  <span>{formatCurrency(child.baseAllowance)}</span>
+                </p>
+                
+                {childrenData[index].weekIntervals.map((interval, intervalIndex) => (
+                  <Card key={intervalIndex} className="p-4 bg-muted/30">
+                    <h4 className="font-medium mb-2">Interval {intervalIndex + 1}</h4>
+                    <div className="space-y-1 text-sm">
+                      <p className="flex justify-between">
+                        <span>Weeks:</span>
+                        <span>Week {interval.start} - Week {interval.end} ({interval.end - interval.start + 1} weeks)</span>
+                      </p>
+                      <p className="flex justify-between">
+                        <span>Base Rate × Weeks:</span>
+                        <span>{formatCurrency(child.baseAllowance * (interval.end - interval.start + 1))}</span>
+                      </p>
+                      {child.specialCareAmount > 0 && (
+                        <p className="flex justify-between">
+                          <span>Special Care Amount:</span>
+                          <span>{formatCurrency(child.specialCareAmount * (interval.end - interval.start + 1))}</span>
+                        </p>
+                      )}
+                      <p className="flex justify-between font-medium border-t pt-1 mt-1">
+                        <span>Interval Total:</span>
+                        <span>{formatCurrency((child.baseAllowance + child.specialCareAmount) * (interval.end - interval.start + 1))}</span>
+                      </p>
+                    </div>
+                  </Card>
+                ))}
+
+                <div className="border-t pt-2 mt-4">
                   <p className="flex justify-between text-base font-semibold">
-                    <span>Weekly Total:</span>
+                    <span>Child Total:</span>
                     <span>{formatCurrency(child.totalAllowance)}</span>
                   </p>
                 </div>
@@ -73,6 +94,8 @@ export function ResultsDisplay({ result }: ResultsDisplayProps) {
           </Card>
         </motion.div>
       ))}
+
+      <Timeline children={childrenData} showLegend={true} />
 
       <motion.div
         initial={{ opacity: 0, y: 20 }}

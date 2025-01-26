@@ -3,9 +3,10 @@ import { ChildFormData } from "@/lib/types";
 
 interface TimelineProps {
   children: ChildFormData[];
+  showLegend?: boolean;
 }
 
-export function Timeline({ children }: TimelineProps) {
+export function Timeline({ children, showLegend = false }: TimelineProps) {
   const colors = [
     "bg-blue-500",
     "bg-green-500",
@@ -33,7 +34,13 @@ export function Timeline({ children }: TimelineProps) {
                   left: `${(interval.start - 1) / 52 * 100}%`,
                   width: `${(interval.end - interval.start + 1) / 52 * 100}%`,
                 }}
-              />
+              >
+                {showLegend && (
+                  <div className="absolute inset-0 flex items-center justify-center text-xs text-white font-medium">
+                    {interval.start}-{interval.end}
+                  </div>
+                )}
+              </motion.div>
             ))}
           </div>
         ))}
@@ -54,6 +61,17 @@ export function Timeline({ children }: TimelineProps) {
           <span key={i}>{i * 4}</span>
         ))}
       </div>
+
+      {showLegend && (
+        <div className="flex flex-wrap gap-4 mt-4">
+          {children.map((child, index) => (
+            <div key={child.id} className="flex items-center gap-2">
+              <div className={`w-4 h-4 rounded ${colors[index % colors.length]}`} />
+              <span className="text-sm">Child {index + 1} ({child.ageGroup})</span>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
