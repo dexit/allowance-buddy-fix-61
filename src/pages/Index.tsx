@@ -72,13 +72,13 @@ export default function Index() {
   };
 
   const handleCalculate = async () => {
-    if (!userInfo) return; // Guard clause to ensure userInfo exists
+    if (!userInfo) return;
     
     const calculatedResult = calculateTotalAllowance(children, userInfo.isExperiencedCarer);
     setResult(calculatedResult);
     setStep('results');
     
-    // Submit to Hubspot with correct data structure and environment
+    // Submit to Hubspot with correct data structure
     await submitToHubspot({
       userInfo: {
         name: userInfo.name,
@@ -88,7 +88,7 @@ export default function Index() {
       },
       children,
       result: calculatedResult
-    }, process.env.NODE_ENV);
+    });
     
     toast({
       title: "Calculation Complete",
