@@ -10,7 +10,7 @@ import { motion } from "framer-motion";
 import { v4 as uuidv4 } from "uuid";
 import { siteConfig } from "@/config/theme";
 import { UserInfoForm, UserInfoFormData } from "@/components/foster/UserInfoForm";
-import { ChildFormData, AgeGroup } from "@/lib/types";
+import { ChildFormData, AgeGroup, Region } from "@/lib/types";
 import {
   Card,
   CardContent,

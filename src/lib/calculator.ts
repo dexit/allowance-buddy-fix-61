@@ -1,3 +1,5 @@
+import { ChildAllowance, TotalAllowance, AgeGroup, Region } from "@/lib/types";
+
 interface RegionalRates {
   London: number;
   "South East": number;
@@ -9,10 +11,7 @@ interface AllowanceRates {
 }
 
 export const AGE_GROUPS = ["0-2", "3-4", "5-10", "11-15", "16-17"] as const;
-export type AgeGroup = typeof AGE_GROUPS[number];
-
 export const REGIONS = ["London", "South East", "Rest of England"] as const;
-export type Region = typeof REGIONS[number];
 
 const ALLOWANCE_RATES: AllowanceRates = {
   "0-2": {
@@ -48,10 +47,10 @@ export const calculateAllowanceForChild = (
   isSpecialCare: boolean
 ): ChildAllowance => {
   const baseAllowance = ALLOWANCE_RATES[ageGroup][region];
-  const ageRelatedElement = 0; // Removed as it's now included in base rate
+  const ageRelatedElement = 0;
   const baseTotal = baseAllowance;
-  const specialCareAmount = isSpecialCare ? Number(baseTotal) * 0.5 : 0; // Added Number() to ensure numeric operation
-  const totalAllowance = baseTotal + specialCareAmount;
+  const specialCareAmount = isSpecialCare ? baseTotal * 0.5 : 0;
+  const totalAllowance = Number(baseTotal) + Number(specialCareAmount);
 
   return {
     ageGroup,
@@ -77,7 +76,7 @@ export const calculateTotalAllowance = (
       (sum, interval) => sum + (interval.end - interval.start + 1),
       0
     );
-    const weeklyAmount = baseAllowance.totalAllowance * (totalWeeks / 52);
+    const weeklyAmount = Number(baseAllowance.totalAllowance) * (totalWeeks / 52);
     return {
       ...baseAllowance,
       totalAllowance: weeklyAmount
@@ -87,7 +86,7 @@ export const calculateTotalAllowance = (
   const weeklyTotal = childrenAllowances.reduce(
     (sum, child) => sum + child.totalAllowance,
     0
-  ) * (isExperiencedCarer ? ALLOWANCE_RATES.experiencedMultiplier : 1);
+  );
 
   return {
     children: childrenAllowances,
