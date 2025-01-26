@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { calculateTotalAllowance } from "@/lib/calculator";
+import { generatePDF } from "@/lib/pdf"; // Add this import
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ChildForm } from "@/components/foster/ChildForm";
@@ -96,7 +97,8 @@ export default function Index() {
   };
 
   const handleDownloadPDF = () => {
-    generatePDF(result);
+    const timelineElement = document.querySelector('.timeline-container');
+    generatePDF(result, timelineElement as HTMLElement | null);
     toast({
       title: "PDF Generated",
       description: "Your allowance summary has been downloaded.",
