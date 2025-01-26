@@ -44,18 +44,24 @@ export function ResultsDisplay({ result }: ResultsDisplayProps) {
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="space-y-2 text-sm">
-                <p className="flex justify-between">
-                  <span>Base Rate:</span>
-                  <span className="font-medium">{formatCurrency(child.baseAllowance)}</span>
-                </p>
-                <p className="flex justify-between">
-                  <span>Age-Related Element:</span>
-                  <span className="font-medium">{formatCurrency(child.ageRelatedElement)}</span>
-                </p>
-                <p className="flex justify-between">
-                  <span>Special Care Amount:</span>
-                  <span className="font-medium">{formatCurrency(child.specialCareAmount)}</span>
-                </p>
+                {child.baseAllowance > 0 && (
+                  <p className="flex justify-between">
+                    <span>Base Rate:</span>
+                    <span className="font-medium">{formatCurrency(child.baseAllowance)}</span>
+                  </p>
+                )}
+                {child.ageRelatedElement > 0 && (
+                  <p className="flex justify-between">
+                    <span>Age-Related Element:</span>
+                    <span className="font-medium">{formatCurrency(child.ageRelatedElement)}</span>
+                  </p>
+                )}
+                {child.specialCareAmount > 0 && (
+                  <p className="flex justify-between">
+                    <span>Special Care Amount:</span>
+                    <span className="font-medium">{formatCurrency(child.specialCareAmount)}</span>
+                  </p>
+                )}
                 <div className="border-t pt-2">
                   <p className="flex justify-between text-base font-semibold">
                     <span>Weekly Total:</span>
