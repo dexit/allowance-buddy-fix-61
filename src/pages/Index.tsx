@@ -98,7 +98,7 @@ export default function Index() {
 
   const handleDownloadPDF = () => {
     const timelineElement = document.querySelector('.timeline-container');
-    generatePDF(result, timelineElement as HTMLElement | null);
+    generatePDF(result, timelineElement as HTMLElement | null, userInfo);
     toast({
       title: "PDF Generated",
       description: "Your allowance summary has been downloaded.",
@@ -206,8 +206,12 @@ export default function Index() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <ResultsDisplay result={result} childrenData={children} />
-                  <Timeline children={children} />
+                  <div className="results-container">
+                    <ResultsDisplay result={result} childrenData={children} />
+                    <div className="timeline-container">
+                      <Timeline children={children} />
+                    </div>
+                  </div>
                   
                   <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mt-8">
                     <Button
