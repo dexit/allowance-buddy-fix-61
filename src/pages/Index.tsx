@@ -1,24 +1,17 @@
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { calculateTotalAllowance } from "@/lib/calculator";
-import { generatePDF } from "@/lib/pdf"; // Add this import
+import { generatePDF } from "@/lib/pdf";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ChildForm } from "@/components/foster/ChildForm";
 import { ResultsDisplay } from "@/components/foster/ResultsDisplay";
 import { Timeline } from "@/components/foster/Timeline";
-import { motion } from "framer-motion";
 import { v4 as uuidv4 } from "uuid";
-import { siteConfig } from "@/config/theme";
 import { UserInfoForm, UserInfoFormData } from "@/components/foster/UserInfoForm";
 import { ChildFormData, AgeGroup, Region } from "@/lib/types";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { StepHeader } from "@/components/foster/StepHeader";
+import { StepContainer } from "@/components/foster/StepContainer";
 import { submitToHubspot } from "@/lib/hubspot";
 
 export default function Index() {
@@ -30,7 +23,7 @@ export default function Index() {
       ageGroup: "0-2" as AgeGroup,
       isSpecialCare: false,
       weekIntervals: [{ start: 1, end: 52 }],
-      region: "London" as Region // Added default region
+      region: "London" as Region
     }
   ]);
   const [result, setResult] = useState<any>(null);
@@ -54,7 +47,7 @@ export default function Index() {
         ageGroup: "0-2" as AgeGroup,
         isSpecialCare: false,
         weekIntervals: [{ start: 1, end: 52 }],
-        region: "London" as Region // Added default region
+        region: "London" as Region
       }
     ]);
   };
@@ -97,13 +90,15 @@ export default function Index() {
   };
 
   const handleDownloadPDF = () => {
-    const timelineElement = document.querySelector('.timeline-container');
-    generatePDF(result, timelineElement as HTMLElement | null, userInfo);
-    toast({
-      title: "PDF Generated",
-      description: "Your allowance summary has been downloaded.",
-      variant: "default",
-    });
+    const resultsContainer = document.querySelector('.results-container');
+    if (resultsContainer && userInfo) {
+      generatePDF(result, resultsContainer as HTMLElement, userInfo);
+      toast({
+        title: "PDF Generated",
+        description: "Your allowance summary has been downloaded.",
+        variant: "default",
+      });
+    }
   };
 
   const handleReset = () => {
@@ -114,7 +109,7 @@ export default function Index() {
       ageGroup: "0-2" as AgeGroup,
       isSpecialCare: false,
       weekIntervals: [{ start: 1, end: 52 }],
-      region: "London" as Region // Added default region
+      region: "London" as Region
     }]);
     setResult(null);
   };
@@ -122,122 +117,90 @@ export default function Index() {
   return (
     <div className="min-h-screen py-12 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-background to-muted/50">
       <div className="max-w-4xl mx-auto">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3 }}
-          className="text-center mb-12"
-        >
-          <h1 className="text-4xl font-bold tracking-tight text-primary mb-4">
-            {siteConfig.name}
-          </h1>
-          <p className="text-xl text-muted-foreground">
-            {siteConfig.description}
-          </p>
-        </motion.div>
+        <StepHeader />
 
         <div className="space-y-8">
           {step === 'userInfo' && (
-            <Card className="border-2 border-primary/10">
-              <CardHeader className="space-y-1">
-                <CardTitle className="text-2xl font-bold text-primary">
-                  Personal Information
-                </CardTitle>
-                <CardDescription>
-                  Please provide your details to get started
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <UserInfoForm 
-                  onSubmit={handleUserInfoSubmit}
-                  isLoading={false}
-                />
-              </CardContent>
-            </Card>
+            <StepContainer
+              title="Personal Information"
+              description="Please provide your details to get started"
+            >
+              <UserInfoForm 
+                onSubmit={handleUserInfoSubmit}
+                isLoading={false}
+              />
+            </StepContainer>
           )}
 
           {step === 'children' && (
-            <Card className="border-2 border-primary/10">
-              <CardHeader className="space-y-1">
-                <CardTitle className="text-2xl font-bold text-primary">
-                  Children Details
-                </CardTitle>
-                <CardDescription>
-                  Add information about each child
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                {children.map((child) => (
-                  <ChildForm
-                    key={child.id}
-                    child={child}
-                    onUpdate={handleUpdateChild}
-                    onRemove={handleRemoveChild}
-                    canRemove={children.length > 1}
-                  />
-                ))}
+            <StepContainer
+              title="Children Details"
+              description="Add information about each child"
+            >
+              {children.map((child) => (
+                <ChildForm
+                  key={child.id}
+                  child={child}
+                  onUpdate={handleUpdateChild}
+                  onRemove={handleRemoveChild}
+                  canRemove={children.length > 1}
+                />
+              ))}
 
-                <div className="flex flex-col sm:flex-row gap-4 justify-between items-center mt-8">
-                  <Button
-                    onClick={handleAddChild}
-                    variant="outline"
-                    className="w-full sm:w-auto border-primary hover:bg-primary/10"
-                  >
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add Another Child
-                  </Button>
-                  <Button
-                    onClick={handleCalculate}
-                    className="w-full sm:w-auto bg-primary hover:bg-primary/90 text-primary-foreground"
-                  >
-                    Calculate Allowance
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+              <div className="flex flex-col sm:flex-row gap-4 justify-between items-center mt-8">
+                <Button
+                  onClick={handleAddChild}
+                  variant="outline"
+                  className="w-full sm:w-auto border-primary hover:bg-primary/10"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Another Child
+                </Button>
+                <Button
+                  onClick={handleCalculate}
+                  className="w-full sm:w-auto bg-primary hover:bg-primary/90 text-primary-foreground"
+                >
+                  Calculate Allowance
+                </Button>
+              </div>
+            </StepContainer>
           )}
 
           {step === 'results' && result && (
-            <>
-              <Card className="border-2 border-primary/10">
-                <CardHeader>
-                  <CardTitle className="text-2xl font-bold text-primary">
-                    Your Allowance Results
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="results-container">
-                    <ResultsDisplay result={result} childrenData={children} />
-                    <div className="timeline-container">
-                      <Timeline children={children} />
-                    </div>
-                  </div>
-                  
-                  <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mt-8">
-                    <Button
-                      onClick={() => setStep('children')}
-                      variant="outline"
-                      className="w-full sm:w-auto border-primary hover:bg-primary/10"
-                    >
-                      Go Back
-                    </Button>
-                    <Button
-                      onClick={handleDownloadPDF}
-                      className="w-full sm:w-auto bg-primary hover:bg-primary/90 text-primary-foreground"
-                    >
-                      Download PDF
-                    </Button>
-                    <Button
-                      onClick={handleReset}
-                      variant="destructive"
-                      className="w-full sm:w-auto"
-                    >
-                      Reset Form
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            </>
+            <StepContainer
+              title="Your Allowance Results"
+              description="Review your calculated allowances"
+            >
+              <div className="results-container print:m-0 print:p-0">
+                <ResultsDisplay result={result} childrenData={children} />
+                <div className="timeline-container">
+                  <Timeline children={children} />
+                </div>
+              </div>
+              
+              <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mt-8">
+                <Button
+                  onClick={() => setStep('children')}
+                  variant="outline"
+                  className="w-full sm:w-auto border-primary hover:bg-primary/10"
+                >
+                  Go Back
+                </Button>
+                <Button
+                  onClick={handleDownloadPDF}
+                  className="w-full sm:w-auto bg-primary hover:bg-primary/90 text-primary-foreground"
+                >
+                  Download PDF
+                </Button>
+                <Button
+                  onClick={handleReset}
+                  variant="destructive"
+                  className="w-full sm:w-auto"
+                >
+                  Reset Form
+                </Button>
+              </div>
+            </StepContainer>
           )}
         </div>
       </div>

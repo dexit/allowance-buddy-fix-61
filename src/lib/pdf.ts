@@ -1,84 +1,46 @@
-import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
+import { UserInfoFormData } from '@/components/foster/UserInfoForm';
 
-export const generatePDF = async (result: any, timelineElement: HTMLElement | null, userInfo: any) => {
-  const doc = new jsPDF({
-    unit: 'px',
-    format: 'a4',
-  });
-
+export const generatePDF = async (result: any, element: HTMLElement, userInfo: UserInfoFormData) => {
   try {
-    // Capture the results container
-    const resultsContainer = document.querySelector('.results-container') as HTMLElement;
-    if (!resultsContainer) {
-      console.error('Results container not found');
-      return;
-    }
-
-    // Convert results to canvas
-    const resultsCanvas = await html2canvas(resultsContainer, {
+    const pdf = new jsPDF('p', 'mm', 'a4');
+    const canvas = await html2canvas(element, {
       scale: 2,
       useCORS: true,
-      logging: true,
+      logging: false,
+      allowTaint: true,
       backgroundColor: '#ffffff'
     });
 
-    // Add results to PDF
-    const resultsImgData = resultsCanvas.toDataURL('image/png');
-    const pdfWidth = doc.internal.pageSize.getWidth();
-    const pdfHeight = doc.internal.pageSize.getHeight();
-    const imgWidth = pdfWidth;
-    const imgHeight = (resultsCanvas.height * imgWidth) / resultsCanvas.width;
-
-    // Add title and user info
-    doc.setFontSize(20);
-    doc.setTextColor(15, 160, 206); // Primary color
-    doc.text('Foster Care Allowance Summary', 20, 30);
+    // Add user information
+    pdf.setFontSize(12);
+    pdf.text(`Name: ${userInfo.name}`, 20, 20);
+    pdf.text(`Email: ${userInfo.email}`, 20, 30);
+    pdf.text(`Phone: ${userInfo.phone}`, 20, 40);
+    pdf.text(`Experienced Carer: ${userInfo.isExperiencedCarer ? 'Yes' : 'No'}`, 20, 50);
     
-    doc.setFontSize(12);
-    doc.setTextColor(34, 34, 34);
-    let yPos = 50;
+    // Add a separator line
+    pdf.line(20, 55, 190, 55);
+
+    // Calculate aspect ratio
+    const imgWidth = 170;
+    const imgHeight = (canvas.height * imgWidth) / canvas.width;
     
-    if (userInfo) {
-      doc.text(`Name: ${userInfo.name}`, 20, yPos);
-      yPos += 15;
-      doc.text(`Email: ${userInfo.email}`, 20, yPos);
-      yPos += 15;
-      doc.text(`Phone: ${userInfo.phone}`, 20, yPos);
-      yPos += 15;
-      doc.text(`Experience: ${userInfo.isExperiencedCarer ? 'Experienced Carer' : 'New Carer'}`, 20, yPos);
-      yPos += 30;
-    }
+    // Add the results content
+    pdf.addImage(
+      canvas.toDataURL('image/png'),
+      'PNG',
+      20,
+      60,
+      imgWidth,
+      imgHeight
+    );
 
-    // Add results image
-    doc.addImage(resultsImgData, 'PNG', 0, yPos, imgWidth, imgHeight);
-
-    // If content exceeds page, add new page for timeline
-    if (timelineElement) {
-      const timelineCanvas = await html2canvas(timelineElement, {
-        scale: 2,
-        useCORS: true,
-        logging: true,
-        backgroundColor: '#ffffff'
-      });
-
-      const timelineImgData = timelineCanvas.toDataURL('image/png');
-      const timelineImgWidth = pdfWidth;
-      const timelineImgHeight = (timelineCanvas.height * timelineImgWidth) / timelineCanvas.width;
-
-      // Add new page if needed
-      if (yPos + imgHeight + timelineImgHeight > pdfHeight) {
-        doc.addPage();
-        yPos = 20;
-      } else {
-        yPos += imgHeight + 20;
-      }
-
-      doc.addImage(timelineImgData, 'PNG', 0, yPos, timelineImgWidth, timelineImgHeight);
-    }
-
-    doc.save('foster-care-allowance.pdf');
+    // Save the PDF
+    pdf.save('foster-care-allowance.pdf');
   } catch (error) {
     console.error('Error generating PDF:', error);
+    throw new Error('Failed to generate PDF');
   }
 };
