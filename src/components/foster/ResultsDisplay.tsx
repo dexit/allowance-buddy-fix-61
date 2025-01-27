@@ -27,6 +27,12 @@ export function ResultsDisplay({ result, childrenData }: ResultsDisplayProps) {
     }).format(amount);
   };
 
+  // Calculate total weeks across all children
+  const totalWeeksInCare = childrenData.reduce((sum, child) => {
+    return sum + child.weekIntervals.reduce((intervalSum, interval) => 
+      intervalSum + (interval.end - interval.start + 1), 0);
+  }, 0);
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -41,12 +47,14 @@ export function ResultsDisplay({ result, childrenData }: ResultsDisplayProps) {
         // Calculate total weeks and allowance for all periods
         const periodsCalculation = childData.weekIntervals.map((interval) => {
           const weeks = interval.end - interval.start + 1;
-          const periodTotal = child.baseAllowance * weeks;
-          return { weeks, periodTotal };
+          const weeklyRate = child.baseAllowance + child.specialCareAmount;
+          const periodTotal = weeklyRate * weeks;
+          return { weeks, weeklyRate, periodTotal };
         });
 
         const totalWeeks = periodsCalculation.reduce((sum, period) => sum + period.weeks, 0);
         const childTotalAllowance = periodsCalculation.reduce((sum, period) => sum + period.periodTotal, 0);
+        const averageWeeklyRate = childTotalAllowance / totalWeeks;
 
         return (
           <motion.div
@@ -61,38 +69,41 @@ export function ResultsDisplay({ result, childrenData }: ResultsDisplayProps) {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2 text-sm">
-                  {childData.weekIntervals.map((interval, intervalIndex) => {
-                    const weeks = interval.end - interval.start + 1;
-                    const periodTotal = child.baseAllowance * weeks;
-                    
-                    return (
-                      <Card key={intervalIndex} className="p-4 bg-muted/30">
-                        <h4 className="font-medium mb-3 text-base">Interval/Period {intervalIndex + 1}</h4>
-                        <div className="space-y-2">
-                          <div className="bg-muted/20 p-3 rounded-lg">
-                            <p className="flex justify-between mb-1">
-                              <span>Week {interval.start} - Week {interval.end}</span>
-                            </p>
-                            <p className="text-sm text-muted-foreground mb-2">
-                              Total: {weeks} Weeks
-                            </p>
-                            <p className="flex justify-between text-sm mb-1">
-                              <span>Weekly base rate:</span>
-                              <span>{formatCurrency(child.baseAllowance)}</span>
-                            </p>
-                            <p className="flex justify-between font-medium border-t pt-2 mt-2">
-                              <span>Interval/Period {intervalIndex + 1} TOTAL:</span>
-                              <span>{formatCurrency(periodTotal)}</span>
-                            </p>
-                          </div>
+                  {periodsCalculation.map((period, intervalIndex) => (
+                    <Card key={intervalIndex} className="p-4 bg-muted/30">
+                      <h4 className="font-medium mb-3 text-base">Period {intervalIndex + 1}</h4>
+                      <div className="space-y-2">
+                        <div className="bg-muted/20 p-3 rounded-lg">
+                          <p className="flex justify-between mb-1">
+                            <span>Week {childData.weekIntervals[intervalIndex].start} - Week {childData.weekIntervals[intervalIndex].end}</span>
+                          </p>
+                          <p className="text-sm text-muted-foreground mb-2">
+                            Total: {period.weeks} Weeks
+                          </p>
+                          <p className="flex justify-between text-sm mb-1">
+                            <span>Weekly rate (including special care):</span>
+                            <span>{formatCurrency(period.weeklyRate)}</span>
+                          </p>
+                          <p className="flex justify-between font-medium border-t pt-2 mt-2">
+                            <span>Period {intervalIndex + 1} Total:</span>
+                            <span>{formatCurrency(period.periodTotal)}</span>
+                          </p>
                         </div>
-                      </Card>
-                    );
-                  })}
+                      </div>
+                    </Card>
+                  ))}
 
                   <div className="border-t pt-2 mt-4">
-                    <p className="flex justify-between text-base font-semibold">
-                      <span>Child Total ({totalWeeks} weeks):</span>
+                    <p className="flex justify-between text-base">
+                      <span>Total Weeks in Care:</span>
+                      <span>{totalWeeks}</span>
+                    </p>
+                    <p className="flex justify-between text-base">
+                      <span>Average Weekly Rate:</span>
+                      <span>{formatCurrency(averageWeeklyRate)}</span>
+                    </p>
+                    <p className="flex justify-between text-base font-semibold mt-2">
+                      <span>Child Total:</span>
                       <span>{formatCurrency(childTotalAllowance)}</span>
                     </p>
                   </div>
@@ -115,16 +126,21 @@ export function ResultsDisplay({ result, childrenData }: ResultsDisplayProps) {
             <CardTitle>Total Allowance Summary</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
+            <div className="space-y-2 mb-4">
+              <p className="text-sm text-muted-foreground">
+                Based on {totalWeeksInCare} total weeks of care across all children
+              </p>
+            </div>
             <p className="flex justify-between text-lg">
-              <span>Weekly Total:</span>
+              <span>Average Weekly Total:</span>
               <span className="font-bold">{formatCurrency(result.weeklyTotal)}</span>
             </p>
             <p className="flex justify-between text-lg">
-              <span>Monthly Estimate:</span>
+              <span>Monthly Estimate (based on average):</span>
               <span className="font-bold">{formatCurrency(result.monthlyTotal)}</span>
             </p>
             <p className="flex justify-between text-lg">
-              <span>Yearly Estimate:</span>
+              <span>Yearly Estimate (based on average):</span>
               <span className="font-bold">{formatCurrency(result.yearlyTotal)}</span>
             </p>
           </CardContent>
