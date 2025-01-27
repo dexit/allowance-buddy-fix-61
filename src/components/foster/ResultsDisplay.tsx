@@ -38,6 +38,16 @@ export function ResultsDisplay({ result, childrenData }: ResultsDisplayProps) {
         const childData = childrenData[index];
         if (!childData) return null;
 
+        // Calculate total weeks and allowance for all periods
+        const periodsCalculation = childData.weekIntervals.map((interval) => {
+          const weeks = interval.end - interval.start + 1;
+          const periodTotal = child.baseAllowance * weeks;
+          return { weeks, periodTotal };
+        });
+
+        const totalWeeks = periodsCalculation.reduce((sum, period) => sum + period.weeks, 0);
+        const childTotalAllowance = periodsCalculation.reduce((sum, period) => sum + period.periodTotal, 0);
+
         return (
           <motion.div
             key={childData.id}
@@ -51,34 +61,39 @@ export function ResultsDisplay({ result, childrenData }: ResultsDisplayProps) {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2 text-sm">
-                  {childData.weekIntervals.map((interval, intervalIndex) => (
-                    <Card key={intervalIndex} className="p-4 bg-muted/30">
-                      <h4 className="font-medium mb-3 text-base">Interval/Period {intervalIndex + 1}</h4>
-                      <div className="space-y-2">
-                        <div className="bg-muted/20 p-3 rounded-lg">
-                          <p className="flex justify-between mb-1">
-                            <span>Week {interval.start} - Week {interval.end}</span>
-                          </p>
-                          <p className="text-sm text-muted-foreground mb-2">
-                            Total: {interval.end - interval.start + 1} Weeks
-                          </p>
-                          <p className="flex justify-between text-sm mb-1">
-                            <span>Weekly base rate:</span>
-                            <span>{formatCurrency(child.baseAllowance)}</span>
-                          </p>
-                          <p className="flex justify-between font-medium border-t pt-2 mt-2">
-                            <span>Interval/Period {intervalIndex + 1} TOTAL:</span>
-                            <span>{formatCurrency(child.baseAllowance * (interval.end - interval.start + 1))}</span>
-                          </p>
+                  {childData.weekIntervals.map((interval, intervalIndex) => {
+                    const weeks = interval.end - interval.start + 1;
+                    const periodTotal = child.baseAllowance * weeks;
+                    
+                    return (
+                      <Card key={intervalIndex} className="p-4 bg-muted/30">
+                        <h4 className="font-medium mb-3 text-base">Interval/Period {intervalIndex + 1}</h4>
+                        <div className="space-y-2">
+                          <div className="bg-muted/20 p-3 rounded-lg">
+                            <p className="flex justify-between mb-1">
+                              <span>Week {interval.start} - Week {interval.end}</span>
+                            </p>
+                            <p className="text-sm text-muted-foreground mb-2">
+                              Total: {weeks} Weeks
+                            </p>
+                            <p className="flex justify-between text-sm mb-1">
+                              <span>Weekly base rate:</span>
+                              <span>{formatCurrency(child.baseAllowance)}</span>
+                            </p>
+                            <p className="flex justify-between font-medium border-t pt-2 mt-2">
+                              <span>Interval/Period {intervalIndex + 1} TOTAL:</span>
+                              <span>{formatCurrency(periodTotal)}</span>
+                            </p>
+                          </div>
                         </div>
-                      </div>
-                    </Card>
-                  ))}
+                      </Card>
+                    );
+                  })}
 
                   <div className="border-t pt-2 mt-4">
                     <p className="flex justify-between text-base font-semibold">
-                      <span>Child Total:</span>
-                      <span>{formatCurrency(child.totalAllowance)}</span>
+                      <span>Child Total ({totalWeeks} weeks):</span>
+                      <span>{formatCurrency(childTotalAllowance)}</span>
                     </p>
                   </div>
                 </div>
