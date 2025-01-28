@@ -3,6 +3,20 @@
 If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
 
 The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+`
+``
+Add "Postcode" field with mask of UK Postcode, adds extra line of the resolved address via the provided extra openstreetmap lookup.
+
+Update "Phone Number" with mask for UK if starts with zero, or +44 resuts in +44 and formated
+
+Update Full Name, to consist of 2 fields: First Name and Last Name,
+Update Email to have mask something like ____@___.___ 
+
+Set Default Region: Rest of England
+Add Allowance Base Rate modifier value at default 0, but can be set in config.
+```
+
+
 
 Follow these steps:
 
