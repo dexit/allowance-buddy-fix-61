@@ -73,8 +73,16 @@ export const FosterCalculator = () => {
     setResult(calculatedResult);
     setStep('results');
     
+    // Map UserInfoFormData to the format expected by Hubspot
+    const hubspotData = {
+      name: `${userInfo.firstName} ${userInfo.lastName}`,
+      email: userInfo.email,
+      phone: userInfo.phone,
+      isExperiencedCarer: userInfo.isExperiencedCarer
+    };
+    
     const response = await submitToHubspot({
-      userInfo,
+      userInfo: hubspotData,
       children,
       result: calculatedResult
     });
