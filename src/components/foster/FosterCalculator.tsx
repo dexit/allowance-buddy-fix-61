@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
-import { calculateTotalAllowance, DEFAULT_REGION } from "@/lib/calculator";
+import { calculateTotalAllowance } from "@/lib/calculator";
 import { generatePDF } from "@/lib/pdf";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -13,6 +13,8 @@ import { ChildFormData, AgeGroup, Region } from "@/lib/types";
 import { StepHeader } from "@/components/foster/StepHeader";
 import { StepContainer } from "@/components/foster/StepContainer";
 import { submitToHubspot } from "@/lib/hubspot";
+
+const DEFAULT_REGION: Region = "Rest of England";
 
 export const FosterCalculator = () => {
   const [step, setStep] = useState<'userInfo' | 'children' | 'results'>('userInfo');
@@ -72,13 +74,7 @@ export const FosterCalculator = () => {
     setStep('results');
     
     const response = await submitToHubspot({
-      userInfo: {
-        firstName: userInfo.firstName,
-        lastName: userInfo.lastName,
-        email: userInfo.email,
-        phone: userInfo.phone,
-        isExperiencedCarer: userInfo.isExperiencedCarer
-      },
+      userInfo,
       children,
       result: calculatedResult
     });

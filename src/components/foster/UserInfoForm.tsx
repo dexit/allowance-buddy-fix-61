@@ -120,24 +120,13 @@ export function UserInfoForm({ onSubmit, isLoading }: UserInfoFormProps) {
               <FormItem>
                 <FormLabel className="text-base font-medium text-gray-900">Email</FormLabel>
                 <FormControl>
-                  <InputMask
+                  <Input
                     {...field}
-                    mask="*****@***.***"
-                    maskChar="_"
-                    formatChars={{
-                      '*': '[A-Za-z0-9@._-]'
-                    }}
+                    type="email"
+                    className="h-11 text-base bg-gray-50 border-gray-200 focus:bg-white"
+                    placeholder="Enter your email address"
                     disabled={isLoading}
-                  >
-                    {(inputProps: any) => (
-                      <Input
-                        {...inputProps}
-                        type="email"
-                        className="h-11 text-base bg-gray-50 border-gray-200 focus:bg-white"
-                        placeholder="Enter your email address"
-                      />
-                    )}
-                  </InputMask>
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
