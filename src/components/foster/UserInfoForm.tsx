@@ -44,6 +44,7 @@ export function UserInfoForm({ onSubmit, isLoading }: UserInfoFormProps) {
   });
 
   const formatPhoneNumber = (value: string) => {
+    if (!value) return value;
     if (value.startsWith('0')) {
       return value.replace(/^0/, '+44 ');
     }
@@ -112,7 +113,7 @@ export function UserInfoForm({ onSubmit, isLoading }: UserInfoFormProps) {
               )}
             />
           </div>
-          
+
           <FormField
             control={form.control}
             name="email"
@@ -143,9 +144,10 @@ export function UserInfoForm({ onSubmit, isLoading }: UserInfoFormProps) {
                   <InputMask
                     {...field}
                     mask={field.value.startsWith('+44') ? '+44 999 999 9999' : '09999 999999'}
-                    maskChar="_"
+                    maskChar=" "
                     value={formatPhoneNumber(field.value)}
                     disabled={isLoading}
+                    alwaysShowMask={false}
                   >
                     {(inputProps: any) => (
                       <Input
@@ -171,16 +173,18 @@ export function UserInfoForm({ onSubmit, isLoading }: UserInfoFormProps) {
                 <FormControl>
                   <InputMask
                     {...field}
-                    mask="aa9 9aa"
-                    maskChar="_"
+                    mask="a*9 9**"
+                    maskChar=" "
                     formatChars={{
                       '9': '[0-9]',
-                      'a': '[A-Za-z]'
+                      'a': '[A-Za-z]',
+                      '*': '[A-Za-z0-9]'
                     }}
                     onBlur={(e) => {
                       field.onBlur();
-                      if (e.target.value.replace(/_/g, '').length >= 6) {
-                        lookupPostcode(e.target.value);
+                      const value = e.target.value.trim();
+                      if (value.length >= 6) {
+                        lookupPostcode(value);
                       }
                     }}
                     disabled={isLoading}
@@ -188,7 +192,7 @@ export function UserInfoForm({ onSubmit, isLoading }: UserInfoFormProps) {
                     {(inputProps: any) => (
                       <Input
                         {...inputProps}
-                        className="h-11 text-base bg-gray-50 border-gray-200 focus:bg-white"
+                        className="h-11 text-base bg-gray-50 border-gray-200 focus:bg-white uppercase"
                         placeholder="Enter your postcode"
                       />
                     )}
