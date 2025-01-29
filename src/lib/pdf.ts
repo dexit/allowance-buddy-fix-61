@@ -15,7 +15,7 @@ export const generatePDF = async (result: any, element: HTMLElement, userInfo: U
 
     // Add user information
     pdf.setFontSize(12);
-    pdf.text(`Name: ${userInfo.name}`, 20, 20);
+    pdf.text(`Name: ${userInfo.firstName} ${userInfo.lastName}`, 20, 20);
     pdf.text(`Email: ${userInfo.email}`, 20, 30);
     pdf.text(`Phone: ${userInfo.phone}`, 20, 40);
     pdf.text(`Experienced Carer: ${userInfo.isExperiencedCarer ? 'Yes' : 'No'}`, 20, 50);

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
-import { calculateTotalAllowance } from "@/lib/calculator";
+import { calculateTotalAllowance, DEFAULT_REGION } from "@/lib/calculator";
 import { generatePDF } from "@/lib/pdf";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -73,7 +73,8 @@ export const FosterCalculator = () => {
     
     const response = await submitToHubspot({
       userInfo: {
-        name: userInfo.name,
+        firstName: userInfo.firstName,
+        lastName: userInfo.lastName,
         email: userInfo.email,
         phone: userInfo.phone,
         isExperiencedCarer: userInfo.isExperiencedCarer
@@ -200,4 +201,4 @@ export const FosterCalculator = () => {
       )}
     </div>
   );
-};
+});
