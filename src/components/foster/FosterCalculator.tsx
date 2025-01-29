@@ -23,7 +23,7 @@ export const FosterCalculator = () => {
       ageGroup: "0-2" as AgeGroup,
       isSpecialCare: false,
       weekIntervals: [{ start: 1, end: 52 }],
-      region: "London" as Region
+      region: DEFAULT_REGION
     }
   ]);
   const [result, setResult] = useState<any>(null);
@@ -47,7 +47,7 @@ export const FosterCalculator = () => {
         ageGroup: "0-2" as AgeGroup,
         isSpecialCare: false,
         weekIntervals: [{ start: 1, end: 52 }],
-        region: "London" as Region
+        region: DEFAULT_REGION
       }
     ]);
   };
@@ -109,7 +109,7 @@ export const FosterCalculator = () => {
       ageGroup: "0-2" as AgeGroup,
       isSpecialCare: false,
       weekIntervals: [{ start: 1, end: 52 }],
-      region: "London" as Region
+      region: DEFAULT_REGION
     }]);
     setResult(null);
   };

@@ -41,13 +41,16 @@ const ALLOWANCE_RATES: AllowanceRates = {
   }
 };
 
+export const DEFAULT_REGION = "Rest of England" as Region;
+export const BASE_RATE_MODIFIER = 0;
+
 export const calculateAllowanceForChild = (
   ageGroup: AgeGroup,
   region: Region,
   isSpecialCare: boolean,
   weekIntervals: Array<{ start: number; end: number }>
 ): ChildAllowance => {
-  const baseAllowance = ALLOWANCE_RATES[ageGroup][region];
+  const baseAllowance = ALLOWANCE_RATES[ageGroup][region] * (1 + BASE_RATE_MODIFIER);
   const ageRelatedElement = 0;
   
   // Calculate total weeks and total allowance based on intervals
