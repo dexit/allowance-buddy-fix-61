@@ -12,9 +12,12 @@ export interface ChildFormData {
 }
 
 export interface UserInfoFormData {
-  name: string;
+  firstName: string;
+  lastName: string;
   email: string;
   phone: string;
+  postcode: string;
+  address?: string;
   isExperiencedCarer: boolean;
 }
 
