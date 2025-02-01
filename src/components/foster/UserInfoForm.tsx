@@ -9,6 +9,7 @@ import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
+import { AGE_GROUPS, REGIONS } from "@/lib/calculator";
 
 const formSchema = z.object({
   firstName: z.string().min(2, "First name must be at least 2 characters"),
@@ -25,9 +26,20 @@ export type UserInfoFormData = z.infer<typeof formSchema>;
 interface UserInfoFormProps {
   onSubmit: (data: UserInfoFormData) => void;
   isLoading?: boolean;
+  config?: FormConfig;
 }
 
-export function UserInfoForm({ onSubmit, isLoading }: UserInfoFormProps) {
+interface FieldConfig {
+  hidden?: boolean;
+}
+
+interface FormConfig {
+  ageGroup?: FieldConfig;
+  region?: FieldConfig;
+  careType?: FieldConfig;
+}
+
+export function UserInfoForm({ onSubmit, isLoading, config }: UserInfoFormProps & { config?: FormConfig }) {
   const [resolvedAddress, setResolvedAddress] = useState<string>("");
   
   const form = useForm<UserInfoFormData>({
@@ -45,7 +57,6 @@ export function UserInfoForm({ onSubmit, isLoading }: UserInfoFormProps) {
 
   const formatPhoneNumber = (value: string) => {
     if (!value) return value;
-    // Remove all non-digit characters
     const number = value.replace(/\D/g, '');
     
     if (number.startsWith('44')) {
@@ -182,12 +193,11 @@ export function UserInfoForm({ onSubmit, isLoading }: UserInfoFormProps) {
                 <FormControl>
                   <InputMask
                     {...field}
-                    mask="a*9 9**"
+                    mask="**9* 9**"
                     maskChar={null}
                     formatChars={{
                       '9': '[0-9]',
-                      'a': '[A-Za-z]',
-                      '*': '[A-Za-z0-9]'
+                      '*': '[A-Za-z]'
                     }}
                     beforeMaskedStateChange={({ nextState }) => {
                       const { value } = nextState;
@@ -225,29 +235,85 @@ export function UserInfoForm({ onSubmit, isLoading }: UserInfoFormProps) {
             </div>
           )}
 
-          <FormField
-            control={form.control}
-            name="isExperiencedCarer"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-base font-medium text-gray-900">Foster Care Experience</FormLabel>
-                <Select
-                  disabled={isLoading}
-                  onValueChange={(value) => field.onChange(value === "experienced")}
-                  value={field.value ? "experienced" : "new"}
-                >
-                  <SelectTrigger className="h-11 text-base bg-gray-50 border-gray-200 focus:bg-white">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="new">New Foster Carer</SelectItem>
-                    <SelectItem value="experienced">Experienced Foster Carer</SelectItem>
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          {!config?.ageGroup?.hidden && (
+            <FormField
+              control={form.control}
+              name="ageGroup"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Age Group</FormLabel>
+                  <Select
+                    value={field.value}
+                    onValueChange={field.onChange}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {AGE_GROUPS.map((ageGroup) => (
+                        <SelectItem key={ageGroup} value={ageGroup}>
+                          {ageGroup}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </FormItem>
+              )}
+            />
+          )}
+
+          {!config?.region?.hidden && (
+            <FormField
+              control={form.control}
+              name="region"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Region</FormLabel>
+                  <Select
+                    value={field.value}
+                    onValueChange={field.onChange}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {REGIONS.map((region) => (
+                        <SelectItem key={region} value={region}>
+                          {region}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </FormItem>
+              )}
+            />
+          )}
+
+          {!config?.careType?.hidden && (
+            <FormField
+              control={form.control}
+              name="isExperiencedCarer"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Foster Care Experience</FormLabel>
+                  <Select
+                    disabled={isLoading}
+                    onValueChange={(value) => field.onChange(value === "experienced")}
+                    value={field.value ? "experienced" : "new"}
+                  >
+                    <SelectTrigger className="h-11 text-base bg-gray-50 border-gray-200 focus:bg-white">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="new">New Foster Carer</SelectItem>
+                      <SelectItem value="experienced">Experienced Foster Carer</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          )}
 
           <Button
             type="submit"
