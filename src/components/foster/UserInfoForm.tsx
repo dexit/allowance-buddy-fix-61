@@ -18,7 +18,9 @@ const formSchema = z.object({
   phone: z.string().min(10, "Please enter a valid phone number"),
   postcode: z.string().min(6, "Please enter a valid postcode"),
   address: z.string().optional(),
-  isExperiencedCarer: z.boolean()
+  isExperiencedCarer: z.boolean(),
+  ageGroup: z.string().optional(),
+  region: z.string().optional()
 });
 
 export type UserInfoFormData = z.infer<typeof formSchema>;
@@ -51,7 +53,9 @@ export function UserInfoForm({ onSubmit, isLoading, config }: UserInfoFormProps 
       phone: "",
       postcode: "",
       address: "",
-      isExperiencedCarer: false
+      isExperiencedCarer: false,
+      ageGroup: undefined,
+      region: undefined
     }
   });
 
