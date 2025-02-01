@@ -154,7 +154,7 @@ export function UserInfoForm({ onSubmit, isLoading, config }: UserInfoFormProps 
           <FormField
             control={form.control}
             name="phone"
-            render={({ field }) => (
+            render={({ field: { ref, ...field } }) => (
               <FormItem>
                 <FormLabel className="text-base font-medium text-gray-900">Phone Number</FormLabel>
                 <FormControl>
@@ -176,6 +176,7 @@ export function UserInfoForm({ onSubmit, isLoading, config }: UserInfoFormProps 
                     {(inputProps: any) => (
                       <Input
                         {...inputProps}
+                        ref={ref}
                         type="tel"
                         className="h-11 text-base bg-gray-50 border-gray-200 focus:bg-white"
                         placeholder="Enter your phone number"
@@ -191,7 +192,7 @@ export function UserInfoForm({ onSubmit, isLoading, config }: UserInfoFormProps 
           <FormField
             control={form.control}
             name="postcode"
-            render={({ field }) => (
+            render={({ field: { ref, ...field } }) => (
               <FormItem>
                 <FormLabel className="text-base font-medium text-gray-900">Postcode</FormLabel>
                 <FormControl>
@@ -222,6 +223,7 @@ export function UserInfoForm({ onSubmit, isLoading, config }: UserInfoFormProps 
                     {(inputProps: any) => (
                       <Input
                         {...inputProps}
+                        ref={ref}
                         className="h-11 text-base bg-gray-50 border-gray-200 focus:bg-white uppercase"
                         placeholder="Enter your postcode"
                       />
