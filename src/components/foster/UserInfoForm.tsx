@@ -45,11 +45,13 @@ export function UserInfoForm({ onSubmit, isLoading }: UserInfoFormProps) {
 
   const formatPhoneNumber = (value: string) => {
     if (!value) return value;
-    if (value.startsWith('0')) {
-      return value.replace(/^0/, '+44 ');
-    }
-    if (value.startsWith('+44')) {
-      return value;
+    // Remove all non-digit characters
+    const number = value.replace(/\D/g, '');
+    
+    if (number.startsWith('44')) {
+      return `+44 ${number.slice(2, 5)} ${number.slice(5, 8)} ${number.slice(8)}`;
+    } else if (number.startsWith('0')) {
+      return number.replace(/(\d{5})(\d{6})/, '$1 $2');
     }
     return value;
   };
@@ -144,10 +146,17 @@ export function UserInfoForm({ onSubmit, isLoading }: UserInfoFormProps) {
                   <InputMask
                     {...field}
                     mask={field.value.startsWith('+44') ? '+44 999 999 9999' : '09999 999999'}
-                    maskChar=" "
+                    maskChar={null}
                     value={formatPhoneNumber(field.value)}
                     disabled={isLoading}
                     alwaysShowMask={false}
+                    beforeMaskedStateChange={({ nextState }) => {
+                      const { value } = nextState;
+                      return {
+                        ...nextState,
+                        value: value.replace(/[^0-9+\s]/g, '')
+                      };
+                    }}
                   >
                     {(inputProps: any) => (
                       <Input
@@ -174,11 +183,18 @@ export function UserInfoForm({ onSubmit, isLoading }: UserInfoFormProps) {
                   <InputMask
                     {...field}
                     mask="a*9 9**"
-                    maskChar=" "
+                    maskChar={null}
                     formatChars={{
                       '9': '[0-9]',
                       'a': '[A-Za-z]',
                       '*': '[A-Za-z0-9]'
+                    }}
+                    beforeMaskedStateChange={({ nextState }) => {
+                      const { value } = nextState;
+                      return {
+                        ...nextState,
+                        value: value.toUpperCase()
+                      };
                     }}
                     onBlur={(e) => {
                       field.onBlur();
