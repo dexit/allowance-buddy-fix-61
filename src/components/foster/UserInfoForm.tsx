@@ -36,12 +36,17 @@ interface FieldConfig {
 }
 
 interface FormConfig {
+  firstName?: FieldConfig;
+  lastName?: FieldConfig;
+  email?: FieldConfig;
+  phone?: FieldConfig;
+  postcode?: FieldConfig;
   ageGroup?: FieldConfig;
   region?: FieldConfig;
   careType?: FieldConfig;
 }
 
-export function UserInfoForm({ onSubmit, isLoading, config }: UserInfoFormProps & { config?: FormConfig }) {
+export function UserInfoForm({ onSubmit, isLoading, config }: UserInfoFormProps) {
   const [resolvedAddress, setResolvedAddress] = useState<string>("");
   
   const form = useForm<UserInfoFormData>({
@@ -93,147 +98,157 @@ export function UserInfoForm({ onSubmit, isLoading, config }: UserInfoFormProps 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <FormField
-              control={form.control}
-              name="firstName"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-base font-medium text-gray-900">First Name</FormLabel>
-                  <FormControl>
-                    <Input 
-                      {...field} 
-                      disabled={isLoading}
-                      className="h-11 text-base bg-gray-50 border-gray-200 focus:bg-white"
-                      placeholder="Enter your first name"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="lastName"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-base font-medium text-gray-900">Last Name</FormLabel>
-                  <FormControl>
-                    <Input 
-                      {...field} 
-                      disabled={isLoading}
-                      className="h-11 text-base bg-gray-50 border-gray-200 focus:bg-white"
-                      placeholder="Enter your last name"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            {!config?.firstName?.hidden && (
+              <FormField
+                control={form.control}
+                name="firstName"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-base font-medium text-gray-900">First Name</FormLabel>
+                    <FormControl>
+                      <Input 
+                        {...field} 
+                        disabled={isLoading}
+                        className="h-11 text-base bg-gray-50 border-gray-200 focus:bg-white"
+                        placeholder="Enter your first name"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
+            {!config?.lastName?.hidden && (
+              <FormField
+                control={form.control}
+                name="lastName"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-base font-medium text-gray-900">Last Name</FormLabel>
+                    <FormControl>
+                      <Input 
+                        {...field} 
+                        disabled={isLoading}
+                        className="h-11 text-base bg-gray-50 border-gray-200 focus:bg-white"
+                        placeholder="Enter your last name"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
           </div>
 
-          <FormField
-            control={form.control}
-            name="email"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-base font-medium text-gray-900">Email</FormLabel>
-                <FormControl>
-                  <Input
-                    {...field}
-                    type="email"
-                    className="h-11 text-base bg-gray-50 border-gray-200 focus:bg-white"
-                    placeholder="Enter your email address"
-                    disabled={isLoading}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          {!config?.email?.hidden && (
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-base font-medium text-gray-900">Email</FormLabel>
+                  <FormControl>
+                    <Input
+                      {...field}
+                      type="email"
+                      className="h-11 text-base bg-gray-50 border-gray-200 focus:bg-white"
+                      placeholder="Enter your email address"
+                      disabled={isLoading}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          )}
 
-          <FormField
-            control={form.control}
-            name="phone"
-            render={({ field: { ref, ...field } }) => (
-              <FormItem>
-                <FormLabel className="text-base font-medium text-gray-900">Phone Number</FormLabel>
-                <FormControl>
-                  <InputMask
-                    {...field}
-                    mask={field.value.startsWith('+44') ? '+44 999 999 9999' : '09999 999999'}
-                    maskChar={null}
-                    value={formatPhoneNumber(field.value)}
-                    disabled={isLoading}
-                    alwaysShowMask={false}
-                    beforeMaskedStateChange={({ nextState }) => {
-                      const { value } = nextState;
-                      return {
-                        ...nextState,
-                        value: value.replace(/[^0-9+\s]/g, '')
-                      };
-                    }}
-                  >
-                    {(inputProps: any) => (
-                      <Input
-                        {...inputProps}
-                        ref={ref}
-                        type="tel"
-                        className="h-11 text-base bg-gray-50 border-gray-200 focus:bg-white"
-                        placeholder="Enter your phone number"
-                      />
-                    )}
-                  </InputMask>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          {!config?.phone?.hidden && (
+            <FormField
+              control={form.control}
+              name="phone"
+              render={({ field: { ref, ...field } }) => (
+                <FormItem>
+                  <FormLabel className="text-base font-medium text-gray-900">Phone Number</FormLabel>
+                  <FormControl>
+                    <InputMask
+                      {...field}
+                      mask={field.value.startsWith('+44') ? '+44 999 999 9999' : '09999 999999'}
+                      maskChar={null}
+                      value={formatPhoneNumber(field.value)}
+                      disabled={isLoading}
+                      alwaysShowMask={false}
+                      beforeMaskedStateChange={({ nextState }) => {
+                        const { value } = nextState;
+                        return {
+                          ...nextState,
+                          value: value.replace(/[^0-9+\s]/g, '')
+                        };
+                      }}
+                    >
+                      {(inputProps: any) => (
+                        <Input
+                          {...inputProps}
+                          ref={ref}
+                          type="tel"
+                          className="h-11 text-base bg-gray-50 border-gray-200 focus:bg-white"
+                          placeholder="Enter your phone number"
+                        />
+                      )}
+                    </InputMask>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          )}
 
-          <FormField
-            control={form.control}
-            name="postcode"
-            render={({ field: { ref, ...field } }) => (
-              <FormItem>
-                <FormLabel className="text-base font-medium text-gray-900">Postcode</FormLabel>
-                <FormControl>
-                  <InputMask
-                    {...field}
-                    mask="**9* 9**"
-                    maskChar={null}
-                    formatChars={{
-                      '9': '[0-9]',
-                      '*': '[A-Za-z]'
-                    }}
-                    beforeMaskedStateChange={({ nextState }) => {
-                      const { value } = nextState;
-                      return {
-                        ...nextState,
-                        value: value.toUpperCase()
-                      };
-                    }}
-                    onBlur={(e) => {
-                      field.onBlur();
-                      const value = e.target.value.trim();
-                      if (value.length >= 6) {
-                        lookupPostcode(value);
-                      }
-                    }}
-                    disabled={isLoading}
-                  >
-                    {(inputProps: any) => (
-                      <Input
-                        {...inputProps}
-                        ref={ref}
-                        className="h-11 text-base bg-gray-50 border-gray-200 focus:bg-white uppercase"
-                        placeholder="Enter your postcode"
-                      />
-                    )}
-                  </InputMask>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          {!config?.postcode?.hidden && (
+            <FormField
+              control={form.control}
+              name="postcode"
+              render={({ field: { ref, ...field } }) => (
+                <FormItem>
+                  <FormLabel className="text-base font-medium text-gray-900">Postcode</FormLabel>
+                  <FormControl>
+                    <InputMask
+                      {...field}
+                      mask="aa9a 9aa"
+                      maskChar={null}
+                      formatChars={{
+                        'a': '[A-Za-z]',
+                        '9': '[0-9]'
+                      }}
+                      beforeMaskedStateChange={({ nextState }) => {
+                        const { value } = nextState;
+                        return {
+                          ...nextState,
+                          value: value.toUpperCase()
+                        };
+                      }}
+                      onBlur={(e) => {
+                        field.onBlur();
+                        const value = e.target.value.trim();
+                        if (value.length >= 6) {
+                          lookupPostcode(value);
+                        }
+                      }}
+                      disabled={isLoading}
+                    >
+                      {(inputProps: any) => (
+                        <Input
+                          {...inputProps}
+                          ref={ref}
+                          className="h-11 text-base bg-gray-50 border-gray-200 focus:bg-white uppercase"
+                          placeholder="Enter your postcode"
+                        />
+                      )}
+                    </InputMask>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          )}
 
           {resolvedAddress && (
             <div className="text-sm text-gray-600 bg-gray-50 p-3 rounded">
