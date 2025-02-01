@@ -212,7 +212,7 @@ export function UserInfoForm({ onSubmit, isLoading, config }: UserInfoFormProps)
                   <FormControl>
                     <InputMask
                       {...field}
-                      mask="aa99 9aa"
+                      mask="aa9[9] 9aa"
                       maskChar={null}
                       formatChars={{
                         'a': '[A-Za-z]',
