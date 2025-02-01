@@ -59,8 +59,8 @@ export function UserInfoForm({ onSubmit, isLoading, config }: UserInfoFormProps)
       postcode: "",
       address: "",
       isExperiencedCarer: false,
-      ageGroup: undefined,
-      region: undefined
+      region: "Rest of England",
+      ageGroup: undefined
     }
   });
 
@@ -254,86 +254,6 @@ export function UserInfoForm({ onSubmit, isLoading, config }: UserInfoFormProps)
             <div className="text-sm text-gray-600 bg-gray-50 p-3 rounded">
               <p>Resolved Address: {resolvedAddress}</p>
             </div>
-          )}
-
-          {!config?.ageGroup?.hidden && (
-            <FormField
-              control={form.control}
-              name="ageGroup"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Age Group</FormLabel>
-                  <Select
-                    value={field.value}
-                    onValueChange={field.onChange}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {AGE_GROUPS.map((ageGroup) => (
-                        <SelectItem key={ageGroup} value={ageGroup}>
-                          {ageGroup}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </FormItem>
-              )}
-            />
-          )}
-
-          {!config?.region?.hidden && (
-            <FormField
-              control={form.control}
-              name="region"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Region</FormLabel>
-                  <Select
-                    value={field.value}
-                    onValueChange={field.onChange}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {REGIONS.map((region) => (
-                        <SelectItem key={region} value={region}>
-                          {region}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </FormItem>
-              )}
-            />
-          )}
-
-          {!config?.careType?.hidden && (
-            <FormField
-              control={form.control}
-              name="isExperiencedCarer"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Foster Care Experience</FormLabel>
-                  <Select
-                    disabled={isLoading}
-                    onValueChange={(value) => field.onChange(value === "experienced")}
-                    value={field.value ? "experienced" : "new"}
-                  >
-                    <SelectTrigger className="h-11 text-base bg-gray-50 border-gray-200 focus:bg-white">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="new">New Foster Carer</SelectItem>
-                      <SelectItem value="experienced">Experienced Foster Carer</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
           )}
 
           <Button
