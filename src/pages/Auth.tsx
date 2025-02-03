@@ -63,13 +63,6 @@ export default function AuthPage() {
             appearance={{ theme: ThemeSupa }}
             providers={['github']}
             redirectTo={`${window.location.origin}/admin`}
-            onError={(error) => {
-              toast({
-                variant: "destructive",
-                title: "Authentication Error",
-                description: error.message
-              });
-            }}
           />
         </Card>
       </div>

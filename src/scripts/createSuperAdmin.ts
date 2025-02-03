@@ -3,11 +3,16 @@ import { supabase } from "@/integrations/supabase/client";
 async function createSuperAdmin() {
   try {
     // First check if the user already exists
-    const { data: existingUser } = await supabase
+    const { data: existingUser, error: checkError } = await supabase
       .from('user_roles')
       .select('*')
       .eq('role', 'admin')
       .single();
+
+    if (checkError) {
+      console.error('Error checking existing admin:', checkError);
+      return;
+    }
 
     if (existingUser) {
       console.log('Admin user already exists!');
@@ -17,9 +22,12 @@ async function createSuperAdmin() {
     // Create the user
     const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
       email: 'dexit@dyc.lv',
-      password: 'superadmin123!',  // More secure password
+      password: 'superadmin123!',
       options: {
-        emailRedirectTo: `${window.location.origin}/admin`
+        emailRedirectTo: `${window.location.origin}/admin`,
+        data: {
+          role: 'admin' // Add role to user metadata
+        }
       }
     });
 
