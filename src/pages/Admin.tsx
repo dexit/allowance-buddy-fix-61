@@ -2,9 +2,6 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import {
@@ -16,6 +13,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { FormConfigPanel } from "@/components/admin/FormConfigPanel";
 import type { Database } from "@/integrations/supabase/types";
 
 type WhitelabelSettings = Database['public']['Tables']['whitelabel_settings']['Row'];
@@ -39,7 +37,6 @@ export default function Admin() {
     created_at: null,
     updated_at: null
   });
-  const [file, setFile] = useState<File | null>(null);
 
   useEffect(() => {
     checkAdminStatus();
@@ -117,65 +114,6 @@ export default function Admin() {
     }
   };
 
-  const handleLogoUpload = async () => {
-    if (!file) return;
-
-    const fileExt = file.name.split(".").pop();
-    const fileName = `${crypto.randomUUID()}.${fileExt}`;
-
-    const { error: uploadError } = await supabase.storage
-      .from("logos")
-      .upload(fileName, file);
-
-    if (uploadError) {
-      toast({
-        title: "Error uploading logo",
-        description: uploadError.message,
-        variant: "destructive",
-      });
-      return;
-    }
-
-    const { data: { publicUrl } } = supabase.storage
-      .from("logos")
-      .getPublicUrl(fileName);
-
-    await updateSettings({ logo_url: publicUrl });
-    setSettings(prev => ({ ...prev, logo_url: publicUrl }));
-
-    toast({
-      title: "Logo uploaded successfully",
-      description: "The logo has been updated.",
-    });
-  };
-
-  const updateSettings = async (updates: Partial<WhitelabelSettings>) => {
-    const { error } = await supabase
-      .from("whitelabel_settings")
-      .update(updates)
-      .eq("id", settings.id);
-
-    if (error) {
-      toast({
-        title: "Error updating settings",
-        description: error.message,
-        variant: "destructive",
-      });
-      return;
-    }
-
-    // Backup to localStorage
-    localStorage.setItem("whitelabel_settings", JSON.stringify({
-      ...settings,
-      ...updates,
-    }));
-
-    toast({
-      title: "Settings updated",
-      description: "Your changes have been saved.",
-    });
-  };
-
   const updateUserRole = async (userId: string, newRole: AppRole) => {
     const { error } = await supabase
       .from("user_roles")
@@ -219,6 +157,7 @@ export default function Admin() {
       <Tabs defaultValue="settings" className="space-y-4">
         <TabsList>
           <TabsTrigger value="settings">Settings</TabsTrigger>
+          <TabsTrigger value="form-config">Form Configuration</TabsTrigger>
           <TabsTrigger value="users">Users</TabsTrigger>
           <TabsTrigger value="submissions">Submissions</TabsTrigger>
           <TabsTrigger value="activities">Activities</TabsTrigger>
@@ -292,6 +231,10 @@ export default function Admin() {
               </div>
             </div>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="form-config">
+          <FormConfigPanel />
         </TabsContent>
 
         <TabsContent value="users">
