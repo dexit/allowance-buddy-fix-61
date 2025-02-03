@@ -2,10 +2,25 @@ import { supabase } from "@/integrations/supabase/client";
 
 async function createSuperAdmin() {
   try {
-    // First create the user
+    // First check if the user already exists
+    const { data: existingUser } = await supabase
+      .from('user_roles')
+      .select('*')
+      .eq('role', 'admin')
+      .single();
+
+    if (existingUser) {
+      console.log('Admin user already exists!');
+      return;
+    }
+
+    // Create the user
     const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
       email: 'dexit@dyc.lv',
-      password: 'superadmin'
+      password: 'superadmin123!',  // More secure password
+      options: {
+        emailRedirectTo: `${window.location.origin}/admin`
+      }
     });
 
     if (signUpError) {
@@ -20,7 +35,7 @@ async function createSuperAdmin() {
         .insert([
           {
             user_id: signUpData.user.id,
-            role: 'admin'  // Using 'admin' role as per the schema
+            role: 'admin'
           }
         ]);
 
@@ -30,9 +45,8 @@ async function createSuperAdmin() {
       }
 
       console.log('Admin user created successfully!');
-      console.log('Important: You need to either:');
-      console.log('1. Confirm the email address in the Supabase dashboard');
-      console.log('2. Or disable email confirmation in the authentication settings');
+      console.log('Important: Check your email to confirm your account');
+      console.log('Or enable auto-confirm in Supabase Authentication settings');
     }
   } catch (error) {
     console.error('Unexpected error:', error);
