@@ -9,6 +9,27 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      form_config: {
+        Row: {
+          id: number
+          config: Json
+          created_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          id?: number
+          config: Json
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          id?: number
+          config?: Json
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       activity_logs: {
         Row: {
           action: string
@@ -397,3 +418,4 @@ export type CompositeTypes<
   : PublicCompositeTypeNameOrOptions extends keyof PublicSchema["CompositeTypes"]
     ? PublicSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
     : never
+

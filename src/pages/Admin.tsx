@@ -26,21 +26,9 @@ export default function Admin() {
   const [users, setUsers] = useState<any[]>([]);
   const [submissions, setSubmissions] = useState<any[]>([]);
   const [activities, setActivities] = useState<any[]>([]);
-  const [settings, setSettings] = useState<WhitelabelSettings>({
-    id: '',
-    company_name: "",
-    primary_color: "",
-    welcome_message: "",
-    logo_url: "",
-    email_template: null,
-    tooltip_content: null,
-    created_at: null,
-    updated_at: null
-  });
 
   useEffect(() => {
     checkAdminStatus();
-    fetchSettings();
     fetchUsers();
     fetchSubmissions();
     fetchActivities();
@@ -94,26 +82,6 @@ export default function Admin() {
     setActivities(data || []);
   };
 
-  const fetchSettings = async () => {
-    const { data, error } = await supabase
-      .from("whitelabel_settings")
-      .select("*")
-      .single();
-
-    if (error) {
-      toast({
-        title: "Error fetching settings",
-        description: error.message,
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (data) {
-      setSettings(data);
-    }
-  };
-
   const updateUserRole = async (userId: string, newRole: AppRole) => {
     const { error } = await supabase
       .from("user_roles")
@@ -156,82 +124,11 @@ export default function Admin() {
 
       <Tabs defaultValue="settings" className="space-y-4">
         <TabsList>
-          <TabsTrigger value="settings">Settings</TabsTrigger>
           <TabsTrigger value="form-config">Form Configuration</TabsTrigger>
           <TabsTrigger value="users">Users</TabsTrigger>
           <TabsTrigger value="submissions">Submissions</TabsTrigger>
           <TabsTrigger value="activities">Activities</TabsTrigger>
         </TabsList>
-
-        <TabsContent value="settings">
-          <Card className="p-6">
-            <div className="space-y-6">
-              <div className="space-y-2">
-                <Label htmlFor="company_name">Company Name</Label>
-                <Input
-                  id="company_name"
-                  value={settings.company_name}
-                  onChange={(e) => setSettings(prev => ({ ...prev, company_name: e.target.value }))}
-                  onBlur={() => updateSettings({ company_name: settings.company_name })}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="primary_color">Primary Color</Label>
-                <div className="flex gap-2">
-                  <Input
-                    id="primary_color"
-                    type="color"
-                    value={settings.primary_color}
-                    onChange={(e) => setSettings(prev => ({ ...prev, primary_color: e.target.value }))}
-                    onBlur={() => updateSettings({ primary_color: settings.primary_color })}
-                  />
-                  <Input
-                    value={settings.primary_color}
-                    onChange={(e) => setSettings(prev => ({ ...prev, primary_color: e.target.value }))}
-                    onBlur={() => updateSettings({ primary_color: settings.primary_color })}
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="welcome_message">Welcome Message</Label>
-                <Textarea
-                  id="welcome_message"
-                  value={settings.welcome_message || ''}
-                  onChange={(e) => setSettings(prev => ({ ...prev, welcome_message: e.target.value }))}
-                  onBlur={() => updateSettings({ welcome_message: settings.welcome_message })}
-                  className="min-h-[100px]"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="logo">Logo</Label>
-                <div className="flex items-center gap-4">
-                  {settings.logo_url && (
-                    <img
-                      src={settings.logo_url}
-                      alt="Company logo"
-                      className="h-12 w-auto object-contain"
-                    />
-                  )}
-                  <Input
-                    id="logo"
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => setFile(e.target.files?.[0] || null)}
-                  />
-                  <Button
-                    onClick={handleLogoUpload}
-                    disabled={!file}
-                  >
-                    Upload Logo
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </Card>
-        </TabsContent>
 
         <TabsContent value="form-config">
           <FormConfigPanel />
