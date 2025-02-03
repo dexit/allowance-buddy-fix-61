@@ -9,7 +9,7 @@ async function createSuperAdmin() {
       .eq('role', 'admin')
       .single();
 
-    if (checkError) {
+    if (checkError && checkError.code !== 'PGRST116') {
       console.error('Error checking existing admin:', checkError);
       return;
     }

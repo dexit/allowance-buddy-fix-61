@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
 import { Card } from "@/components/ui/card";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 
 export default function AuthPage() {
   const navigate = useNavigate();
@@ -38,6 +38,14 @@ export default function AuthPage() {
       if (event === 'SIGNED_OUT') {
         navigate('/auth');
       }
+
+      if (event === 'USER_DELETED' || event === 'PASSWORD_RECOVERY') {
+        toast({
+          variant: "destructive",
+          title: "Authentication Event",
+          description: `Event: ${event}`
+        });
+      }
     });
 
     return () => subscription.unsubscribe();
@@ -60,7 +68,17 @@ export default function AuthPage() {
         <Card className="py-8 px-4 shadow sm:rounded-lg sm:px-10">
           <Auth
             supabaseClient={supabase}
-            appearance={{ theme: ThemeSupa }}
+            appearance={{ 
+              theme: ThemeSupa,
+              variables: {
+                default: {
+                  colors: {
+                    brand: '#2563eb',
+                    brandAccent: '#1d4ed8'
+                  }
+                }
+              }
+            }}
             providers={['github']}
             redirectTo={`${window.location.origin}/admin`}
           />
