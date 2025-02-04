@@ -67,21 +67,8 @@ export function UserInfoForm({ onSubmit, isLoading, config }: UserInfoFormProps)
     }
   });
 
-  const formatPhoneNumber = (value: string) => {
-    if (!value) return value;
-    const number = value.replace(/\D/g, '');
-    
-    if (number.startsWith('44')) {
-      return `+44 ${number.slice(2, 5)} ${number.slice(5, 8)} ${number.slice(8)}`;
-    } else if (number.startsWith('0')) {
-      return number.replace(/(\d{5})(\d{6})/, '$1 $2');
-    }
-    return value;
-  };
-
   const lookupPostcode = async (postcode: string) => {
     try {
-      // Clean the postcode by removing spaces and any characters inside brackets
       const cleanPostcode = postcode.replace(/\s+/g, '').replace(/\[.*?\]/g, '');
       
       const response = await fetch(`https://api.postcodes.io/postcodes/${cleanPostcode}`);
@@ -97,39 +84,47 @@ export function UserInfoForm({ onSubmit, isLoading, config }: UserInfoFormProps)
     } catch (error) {
       console.error('Error looking up postcode:', error);
       toast({
-        title: "Error",
-        description: "Failed to lookup postcode. Please ensure it's valid.",
-        variant: "destructive"
+        title: "Warning",
+        description: "Failed to lookup postcode. You can still proceed.",
+        variant: "default"
       });
     }
   };
 
   const handleFormSubmit = async (data: UserInfoFormData) => {
     try {
-      // Get current form config
-      const { data: formConfig } = await supabase
-        .from('form_config')
-        .select('*')
-        .single();
+      // Try to store submission but don't block on failure
+      try {
+        const { data: formConfig } = await supabase
+          .from('form_config')
+          .select('*')
+          .single();
 
-      // Store submission
-      const { error: submissionError } = await supabase
-        .from('form_submissions')
-        .insert({
-          form_config_id: formConfig?.id,
-          user_info: data,
-          status: 'pending'
-        });
+        if (formConfig) {
+          await supabase
+            .from('form_submissions')
+            .insert({
+              form_config_id: formConfig?.id,
+              user_info: data,
+              status: 'pending'
+            });
+        }
+      } catch (error) {
+        console.warn('Failed to store submission, continuing anyway:', error);
+      }
 
-      if (submissionError) throw submissionError;
-
+      // Always proceed with form submission
       onSubmit(data);
+      
     } catch (error: any) {
+      console.error('Error in form submission:', error);
       toast({
-        title: "Error",
-        description: "Failed to save form submission",
-        variant: "destructive"
+        title: "Warning",
+        description: "Some features may be limited but you can continue.",
+        variant: "default"
       });
+      // Still proceed with the submission
+      onSubmit(data);
     }
   };
 

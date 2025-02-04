@@ -73,25 +73,36 @@ export const FosterCalculator = () => {
     setResult(calculatedResult);
     setStep('results');
     
-    // Map UserInfoFormData to the format expected by Hubspot
-    const hubspotData = {
-      name: `${userInfo.firstName} ${userInfo.lastName}`,
-      email: userInfo.email,
-      phone: userInfo.phone,
-      isExperiencedCarer: userInfo.isExperiencedCarer
-    };
-    
-    const response = await submitToHubspot({
-      userInfo: hubspotData,
-      children,
-      result: calculatedResult
-    });
-    
-    toast({
-      title: response.status === 'success' ? "Calculation Complete" : "Warning",
-      description: response.message || "Your foster care allowance has been calculated.",
-      variant: response.status === 'success' ? "default" : "destructive",
-    });
+    // Try to submit to Hubspot but don't block on failure
+    try {
+      const hubspotData = {
+        name: `${userInfo.firstName} ${userInfo.lastName}`,
+        email: userInfo.email,
+        phone: userInfo.phone,
+        isExperiencedCarer: userInfo.isExperiencedCarer
+      };
+      
+      const response = await submitToHubspot({
+        userInfo: hubspotData,
+        children,
+        result: calculatedResult
+      });
+      
+      if (response.status === 'success') {
+        toast({
+          title: "Calculation Complete",
+          description: "Your foster care allowance has been calculated.",
+          variant: "default",
+        });
+      }
+    } catch (error) {
+      console.warn('Failed to submit to Hubspot:', error);
+      toast({
+        title: "Calculation Complete",
+        description: "Your foster care allowance has been calculated.",
+        variant: "default",
+      });
+    }
   };
 
   const handleDownloadPDF = () => {
