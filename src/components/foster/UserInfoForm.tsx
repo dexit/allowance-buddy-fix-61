@@ -81,7 +81,13 @@ export function UserInfoForm({ onSubmit, isLoading, config }: UserInfoFormProps)
 
   const lookupPostcode = async (postcode: string) => {
     try {
-      const response = await fetch(`https://api.postcodes.io/postcodes/${postcode}`);
+      // Clean the postcode by removing spaces and any characters inside brackets
+      const cleanPostcode = postcode.replace(/\s+/g, '').replace(/\[.*?\]/g, '');
+      
+      const response = await fetch(`https://api.postcodes.io/postcodes/${cleanPostcode}`);
+      if (!response.ok) {
+        throw new Error('Invalid postcode');
+      }
       const data = await response.json();
       if (data.result) {
         const address = `${data.result.parish || ''} ${data.result.admin_district}, ${data.result.postcode}`;
@@ -90,6 +96,11 @@ export function UserInfoForm({ onSubmit, isLoading, config }: UserInfoFormProps)
       }
     } catch (error) {
       console.error('Error looking up postcode:', error);
+      toast({
+        title: "Error",
+        description: "Failed to lookup postcode. Please ensure it's valid.",
+        variant: "destructive"
+      });
     }
   };
 
