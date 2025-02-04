@@ -10,6 +10,7 @@ import Admin from "./pages/Admin";
 import Auth from "./pages/Auth";
 import Embed from "./pages/Embed";
 import type { Session } from "@supabase/supabase-js";
+import { useToast } from "@/components/ui/use-toast";
 
 const queryClient = new QueryClient();
 
@@ -17,23 +18,44 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
+  const { toast } = useToast();
 
   useEffect(() => {
     const checkAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      setSession(session);
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        setSession(session);
 
-      if (session) {
-        const { data: roles } = await supabase
-          .from('user_roles')
-          .select('role')
-          .eq('user_id', session.user.id)
-          .single();
+        if (session) {
+          const { data: roles, error } = await supabase
+            .from('user_roles')
+            .select('role')
+            .eq('user_id', session.user.id);
 
-        setIsAdmin(roles?.role === 'admin');
+          if (error && error.code !== 'PGRST116') {
+            toast({
+              title: "Error checking user role",
+              description: error.message,
+              variant: "destructive"
+            });
+            setLoading(false);
+            return;
+          }
+
+          // Check if user has admin role
+          setIsAdmin(roles && roles.length > 0 && roles[0]?.role === 'admin');
+        }
+        
+        setLoading(false);
+      } catch (error) {
+        console.error('Auth check error:', error);
+        toast({
+          title: "Authentication Error",
+          description: "There was an error checking your authentication status",
+          variant: "destructive"
+        });
+        setLoading(false);
       }
-      
-      setLoading(false);
     };
 
     checkAuth();
@@ -43,7 +65,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     });
 
     return () => subscription.unsubscribe();
-  }, []);
+  }, [toast]);
 
   if (loading) {
     return <div>Loading...</div>;
