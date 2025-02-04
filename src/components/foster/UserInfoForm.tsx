@@ -10,6 +10,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { AGE_GROUPS, REGIONS } from "@/lib/calculator";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/components/ui/use-toast";
 
 const formSchema = z.object({
   firstName: z.string().min(2, "First name must be at least 2 characters"),
@@ -305,3 +307,4 @@ export function UserInfoForm({ onSubmit, isLoading, config }: UserInfoFormProps)
     </motion.div>
   );
 }
+

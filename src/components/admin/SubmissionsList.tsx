@@ -42,7 +42,9 @@ export function SubmissionsList() {
       return;
     }
 
-    setSubmissions(data || []);
+    if (data) {
+      setSubmissions(data as Submission[]);
+    }
   };
 
   return (
