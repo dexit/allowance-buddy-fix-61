@@ -67,6 +67,18 @@ export function UserInfoForm({ onSubmit, isLoading, config }: UserInfoFormProps)
     }
   });
 
+  const formatPhoneNumber = (value: string) => {
+    if (!value) return value;
+    const number = value.replace(/\D/g, '');
+    
+    if (number.startsWith('44')) {
+      return `+44 ${number.slice(2, 5)} ${number.slice(5, 8)} ${number.slice(8)}`;
+    } else if (number.startsWith('0')) {
+      return number.replace(/(\d{5})(\d{6})/, '$1 $2');
+    }
+    return value;
+  };
+
   const lookupPostcode = async (postcode: string) => {
     try {
       const cleanPostcode = postcode.replace(/\s+/g, '').replace(/\[.*?\]/g, '');
