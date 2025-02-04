@@ -39,7 +39,8 @@ export default function AuthPage() {
         navigate('/auth');
       }
 
-      if (event === 'USER_DELETED' || event === 'PASSWORD_RECOVERY') {
+      // Using the correct AuthChangeEvent types
+      if (event === 'USER_UPDATED' || event === 'PASSWORD_RECOVERY') {
         toast({
           variant: "destructive",
           title: "Authentication Event",
