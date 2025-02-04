@@ -30,6 +30,13 @@ interface FormConfig {
   };
 }
 
+interface SupabaseFormConfig {
+  id: number;
+  config: unknown;
+  created_at: string | null;
+  updated_at: string | null;
+}
+
 export function FormConfigList() {
   const { toast } = useToast();
   const [configs, setConfigs] = useState<FormConfig[]>([]);
@@ -51,7 +58,13 @@ export function FormConfigList() {
       return;
     }
 
-    setConfigs(data || []);
+    // Transform the data to ensure it matches FormConfig type
+    const transformedData: FormConfig[] = (data as SupabaseFormConfig[]).map(item => ({
+      id: item.id,
+      config: item.config as FormConfig['config']
+    }));
+
+    setConfigs(transformedData);
   };
 
   const handleSave = async (config: FormConfig) => {
