@@ -3,35 +3,17 @@ import { useNavigate } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
-import { Card } from "@/components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FormConfigList } from "@/components/admin/FormConfigList";
-import type { Database } from "@/integrations/supabase/types";
-
-type WhitelabelSettings = Database['public']['Tables']['whitelabel_settings']['Row'];
-type AppRole = "admin" | "user" | "superadmin";
+import { SubmissionsList } from "@/components/admin/SubmissionsList";
 
 export default function Admin() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
-  const [users, setUsers] = useState<any[]>([]);
-  const [submissions, setSubmissions] = useState<any[]>([]);
-  const [activities, setActivities] = useState<any[]>([]);
 
   useEffect(() => {
     checkAdminStatus();
-    fetchUsers();
-    fetchSubmissions();
-    fetchActivities();
   }, []);
 
   const checkAdminStatus = async () => {
@@ -45,7 +27,7 @@ export default function Admin() {
       .from("user_roles")
       .select("role")
       .eq("user_id", user.id)
-      .single();
+      .maybeSingle();
 
     if (roles?.role !== "admin") {
       navigate("/");
@@ -53,57 +35,6 @@ export default function Admin() {
     }
 
     setLoading(false);
-  };
-
-  const fetchUsers = async () => {
-    const { data: { users: authUsers } } = await supabase.auth.admin.listUsers();
-    const { data: roles } = await supabase.from("user_roles").select("*");
-
-    const usersWithRoles = authUsers.map(user => ({
-      ...user,
-      role: roles?.find(r => r.user_id === user.id)?.role || 'user'
-    }));
-
-    setUsers(usersWithRoles);
-  };
-
-  const fetchSubmissions = async () => {
-    const { data } = await supabase
-      .from("foster_submissions")
-      .select("*, external_submissions(*)");
-    setSubmissions(data || []);
-  };
-
-  const fetchActivities = async () => {
-    const { data } = await supabase
-      .from("activity_logs")
-      .select("*")
-      .order("created_at", { ascending: false });
-    setActivities(data || []);
-  };
-
-  const updateUserRole = async (userId: string, newRole: AppRole) => {
-    const { error } = await supabase
-      .from("user_roles")
-      .upsert({ 
-        user_id: userId, 
-        role: newRole
-      });
-
-    if (error) {
-      toast({
-        title: "Error updating role",
-        description: error.message,
-        variant: "destructive",
-      });
-      return;
-    }
-
-    await fetchUsers();
-    toast({
-      title: "Role updated",
-      description: "User role has been updated successfully.",
-    });
   };
 
   if (loading) {
@@ -125,101 +56,15 @@ export default function Admin() {
       <Tabs defaultValue="form-config" className="space-y-4">
         <TabsList>
           <TabsTrigger value="form-config">Form Configuration</TabsTrigger>
-          <TabsTrigger value="users">Users</TabsTrigger>
           <TabsTrigger value="submissions">Submissions</TabsTrigger>
-          <TabsTrigger value="activities">Activities</TabsTrigger>
         </TabsList>
 
         <TabsContent value="form-config">
           <FormConfigList />
         </TabsContent>
 
-        <TabsContent value="users">
-          <Card className="p-6">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Role</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {users.map((user) => (
-                  <TableRow key={user.id}>
-                    <TableCell>{user.email}</TableCell>
-                    <TableCell>{user.role}</TableCell>
-                    <TableCell>
-                      <select
-                        value={user.role}
-                        onChange={(e) => updateUserRole(user.id, e.target.value as AppRole)}
-                        className="border rounded p-1"
-                      >
-                        <option value="user">User</option>
-                        <option value="admin">Admin</option>
-                      </select>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </Card>
-        </TabsContent>
-
         <TabsContent value="submissions">
-          <Card className="p-6">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Date</TableHead>
-                  <TableHead>User Info</TableHead>
-                  <TableHead>Status</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {submissions.map((submission) => (
-                  <TableRow key={submission.id}>
-                    <TableCell>
-                      {new Date(submission.created_at).toLocaleDateString()}
-                    </TableCell>
-                    <TableCell>
-                      {submission.user_info.email}
-                    </TableCell>
-                    <TableCell>
-                      {submission.external_submissions?.[0]?.status || 'pending'}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="activities">
-          <Card className="p-6">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Date</TableHead>
-                  <TableHead>Action</TableHead>
-                  <TableHead>Details</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {activities.map((activity) => (
-                  <TableRow key={activity.id}>
-                    <TableCell>
-                      {new Date(activity.created_at).toLocaleDateString()}
-                    </TableCell>
-                    <TableCell>{activity.action}</TableCell>
-                    <TableCell>
-                      {JSON.stringify(activity.details)}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </Card>
+          <SubmissionsList />
         </TabsContent>
       </Tabs>
     </div>

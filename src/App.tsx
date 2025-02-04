@@ -27,31 +27,21 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
         setSession(session);
 
         if (session) {
-          const { data: roles, error } = await supabase
+          const { data: roles } = await supabase
             .from('user_roles')
             .select('role')
-            .eq('user_id', session.user.id);
+            .eq('user_id', session.user.id)
+            .maybeSingle();
 
-          if (error && error.code !== 'PGRST116') {
-            toast({
-              title: "Error checking user role",
-              description: error.message,
-              variant: "destructive"
-            });
-            setLoading(false);
-            return;
-          }
-
-          // Check if user has admin role
-          setIsAdmin(roles && roles.length > 0 && roles[0]?.role === 'admin');
+          setIsAdmin(roles?.role === 'admin');
         }
         
         setLoading(false);
-      } catch (error) {
+      } catch (error: any) {
         console.error('Auth check error:', error);
         toast({
           title: "Authentication Error",
-          description: "There was an error checking your authentication status",
+          description: error.message,
           variant: "destructive"
         });
         setLoading(false);

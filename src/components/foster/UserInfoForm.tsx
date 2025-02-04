@@ -78,14 +78,44 @@ export function UserInfoForm({ onSubmit, isLoading, config }: UserInfoFormProps)
 
   const lookupPostcode = async (postcode: string) => {
     try {
-      const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&country=GB&postalcode=${postcode}`);
+      const response = await fetch(`https://api.postcodes.io/postcodes/${postcode}`);
       const data = await response.json();
-      if (data && data[0]) {
-        setResolvedAddress(data[0].display_name);
-        form.setValue('address', data[0].display_name);
+      if (data.result) {
+        const address = `${data.result.parish || ''} ${data.result.admin_district}, ${data.result.postcode}`;
+        setResolvedAddress(address.trim());
+        form.setValue('address', address.trim());
       }
     } catch (error) {
       console.error('Error looking up postcode:', error);
+    }
+  };
+
+  const handleFormSubmit = async (data: UserInfoFormData) => {
+    try {
+      // Get current form config
+      const { data: formConfig } = await supabase
+        .from('form_config')
+        .select('*')
+        .single();
+
+      // Store submission
+      const { error: submissionError } = await supabase
+        .from('form_submissions')
+        .insert({
+          form_config_id: formConfig?.id,
+          user_info: data,
+          status: 'pending'
+        });
+
+      if (submissionError) throw submissionError;
+
+      onSubmit(data);
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: "Failed to save form submission",
+        variant: "destructive"
+      });
     }
   };
 
@@ -96,7 +126,7 @@ export function UserInfoForm({ onSubmit, isLoading, config }: UserInfoFormProps)
       transition={{ duration: 0.3 }}
     >
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {!config?.firstName?.hidden && (
               <FormField
