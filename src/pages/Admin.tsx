@@ -13,7 +13,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { FormConfigPanel } from "@/components/admin/FormConfigPanel";
+import { FormConfigList } from "@/components/admin/FormConfigList";
 import type { Database } from "@/integrations/supabase/types";
 
 type WhitelabelSettings = Database['public']['Tables']['whitelabel_settings']['Row'];
@@ -122,7 +122,7 @@ export default function Admin() {
         </Button>
       </div>
 
-      <Tabs defaultValue="settings" className="space-y-4">
+      <Tabs defaultValue="form-config" className="space-y-4">
         <TabsList>
           <TabsTrigger value="form-config">Form Configuration</TabsTrigger>
           <TabsTrigger value="users">Users</TabsTrigger>
@@ -131,7 +131,7 @@ export default function Admin() {
         </TabsList>
 
         <TabsContent value="form-config">
-          <FormConfigPanel />
+          <FormConfigList />
         </TabsContent>
 
         <TabsContent value="users">
