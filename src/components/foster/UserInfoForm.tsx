@@ -50,6 +50,7 @@ interface FormConfig {
 
 export function UserInfoForm({ onSubmit, isLoading, config }: UserInfoFormProps) {
   const [resolvedAddress, setResolvedAddress] = useState<string>("");
+  const { toast } = useToast();
   
   const form = useForm<UserInfoFormData>({
     resolver: zodResolver(formSchema),
@@ -307,4 +308,3 @@ export function UserInfoForm({ onSubmit, isLoading, config }: UserInfoFormProps)
     </motion.div>
   );
 }
-
