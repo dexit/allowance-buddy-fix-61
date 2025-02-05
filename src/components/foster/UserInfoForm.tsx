@@ -1,32 +1,17 @@
 
-import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useForm } from "react-hook-form";
+import { Form } from "@/components/ui/form";
 import { motion } from "framer-motion";
 import { Loader2 } from "lucide-react";
-import InputMask from 'react-input-mask';
-import * as z from "zod";
+import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
-import { AGE_GROUPS, REGIONS } from "@/lib/calculator";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
-
-const formSchema = z.object({
-  firstName: z.string().min(2, "First name must be at least 2 characters"),
-  lastName: z.string().min(2, "Last name must be at least 2 characters"),
-  email: z.string().email("Please enter a valid email"),
-  phone: z.string().min(10, "Please enter a valid phone number"),
-  postcode: z.string().min(6, "Please enter a valid postcode"),
-  address: z.string().optional(),
-  isExperiencedCarer: z.boolean(),
-  ageGroup: z.string().optional(),
-  region: z.string().optional()
-});
-
-export type UserInfoFormData = z.infer<typeof formSchema>;
+import { userInfoFormSchema, UserInfoFormData, FormConfig } from "@/lib/form-schemas";
+import { NameFields } from "./form-fields/NameFields";
+import { ContactFields } from "./form-fields/ContactFields";
+import { PostcodeField } from "./form-fields/PostcodeField";
 
 interface UserInfoFormProps {
   onSubmit: (data: UserInfoFormData) => void;
@@ -34,27 +19,12 @@ interface UserInfoFormProps {
   config?: FormConfig;
 }
 
-interface FieldConfig {
-  hidden?: boolean;
-}
-
-interface FormConfig {
-  firstName?: FieldConfig;
-  lastName?: FieldConfig;
-  email?: FieldConfig;
-  phone?: FieldConfig;
-  postcode?: FieldConfig;
-  ageGroup?: FieldConfig;
-  region?: FieldConfig;
-  careType?: FieldConfig;
-}
-
 export function UserInfoForm({ onSubmit, isLoading, config }: UserInfoFormProps) {
   const [resolvedAddress, setResolvedAddress] = useState<string>("");
   const { toast } = useToast();
   
   const form = useForm<UserInfoFormData>({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(userInfoFormSchema),
     defaultValues: {
       firstName: "",
       lastName: "",
@@ -68,45 +38,8 @@ export function UserInfoForm({ onSubmit, isLoading, config }: UserInfoFormProps)
     }
   });
 
-  const formatPhoneNumber = (value: string) => {
-    if (!value) return value;
-    const number = value.replace(/\D/g, '');
-    
-    // Convert UK mobile numbers to international format
-    if (number.startsWith('07') || number.startsWith('7')) {
-      const cleanNumber = number.startsWith('07') ? number.slice(1) : number;
-      return `+44 ${cleanNumber.slice(0, 4)} ${cleanNumber.slice(4, 7)} ${cleanNumber.slice(7)}`;
-    }
-    return value;
-  };
-
-  const lookupPostcode = async (postcode: string) => {
-    try {
-      const cleanPostcode = postcode.replace(/\s+/g, '').replace(/\[.*?\]/g, '');
-      
-      const response = await fetch(`https://api.postcodes.io/postcodes/${cleanPostcode}`);
-      if (!response.ok) {
-        throw new Error('Invalid postcode');
-      }
-      const data = await response.json();
-      if (data.result) {
-        const address = `${data.result.parish || ''} ${data.result.admin_district}, ${data.result.postcode}`;
-        setResolvedAddress(address.trim());
-        form.setValue('address', address.trim());
-      }
-    } catch (error) {
-      console.error('Error looking up postcode:', error);
-      toast({
-        title: "Warning",
-        description: "Failed to lookup postcode. You can still proceed.",
-        variant: "default"
-      });
-    }
-  };
-
   const handleFormSubmit = async (data: UserInfoFormData) => {
     try {
-      // Try to store submission but don't block on failure
       try {
         const { data: formConfig } = await supabase
           .from('form_config')
@@ -126,7 +59,6 @@ export function UserInfoForm({ onSubmit, isLoading, config }: UserInfoFormProps)
         console.warn('Failed to store submission, continuing anyway:', error);
       }
 
-      // Always proceed with form submission
       onSubmit(data);
       
     } catch (error: any) {
@@ -136,7 +68,6 @@ export function UserInfoForm({ onSubmit, isLoading, config }: UserInfoFormProps)
         description: "Some features may be limited but you can continue.",
         variant: "default"
       });
-      // Still proceed with the submission
       onSubmit(data);
     }
   };
@@ -149,160 +80,21 @@ export function UserInfoForm({ onSubmit, isLoading, config }: UserInfoFormProps)
     >
       <Form {...form}>
         <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {!config?.firstName?.hidden && (
-              <FormField
-                control={form.control}
-                name="firstName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-base font-medium text-gray-900">First Name</FormLabel>
-                    <FormControl>
-                      <Input 
-                        {...field} 
-                        disabled={isLoading}
-                        className="h-11 text-base bg-gray-50 border-gray-200 focus:bg-white"
-                        placeholder="Enter your first name"
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            )}
-            {!config?.lastName?.hidden && (
-              <FormField
-                control={form.control}
-                name="lastName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-base font-medium text-gray-900">Last Name</FormLabel>
-                    <FormControl>
-                      <Input 
-                        {...field} 
-                        disabled={isLoading}
-                        className="h-11 text-base bg-gray-50 border-gray-200 focus:bg-white"
-                        placeholder="Enter your last name"
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            )}
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {!config?.email?.hidden && (
-              <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-base font-medium text-gray-900">Email</FormLabel>
-                    <FormControl>
-                      <Input
-                        {...field}
-                        type="email"
-                        className="h-11 text-base bg-gray-50 border-gray-200 focus:bg-white"
-                        placeholder="Enter your email address"
-                        disabled={isLoading}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            )}
-
-            {!config?.phone?.hidden && (
-              <FormField
-                control={form.control}
-                name="phone"
-                render={({ field: { ref, ...field } }) => (
-                  <FormItem>
-                    <FormLabel className="text-base font-medium text-gray-900">Phone Number</FormLabel>
-                    <FormControl>
-                      <InputMask
-                        {...field}
-                        mask={field.value.startsWith('+44') ? '+44 9999 999 9999' : '9999999999'}
-                        maskChar={null}
-                        value={formatPhoneNumber(field.value)}
-                        disabled={isLoading}
-                        alwaysShowMask={false}
-                        beforeMaskedStateChange={({ nextState }) => {
-                          const { value } = nextState;
-                          return {
-                            ...nextState,
-                            value: value.replace(/[^0-9+\s]/g, '')
-                          };
-                        }}
-                      >
-                        {(inputProps: any) => (
-                          <Input
-                            {...inputProps}
-                            ref={ref}
-                            type="tel"
-                            className="h-11 text-base bg-gray-50 border-gray-200 focus:bg-white"
-                            placeholder="Enter your phone number"
-                          />
-                        )}
-                      </InputMask>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            )}
-
-            {!config?.postcode?.hidden && (
-              <FormField
-                control={form.control}
-                name="postcode"
-                render={({ field: { ref, ...field } }) => (
-                  <FormItem>
-                    <FormLabel className="text-base font-medium text-gray-900">Postcode</FormLabel>
-                    <FormControl>
-                      <InputMask
-                        {...field}
-                        mask="aa*9[9] 9aa"
-                        maskChar={null}
-                        formatChars={{
-                          'a': '[A-Za-z]',
-                          '9': '[0-9]',
-                          '*': '[0-9A-Za-z]'
-                        }}
-                        beforeMaskedStateChange={({ nextState }) => {
-                          const { value } = nextState;
-                          return {
-                            ...nextState,
-                            value: value.toUpperCase()
-                          };
-                        }}
-                        onBlur={(e) => {
-                          field.onBlur();
-                          const value = e.target.value.trim();
-                          if (value.length >= 6) {
-                            lookupPostcode(value);
-                          }
-                        }}
-                        disabled={isLoading}
-                      >
-                        {(inputProps: any) => (
-                          <Input
-                            {...inputProps}
-                            ref={ref}
-                            className="h-11 text-base bg-gray-50 border-gray-200 focus:bg-white uppercase"
-                            placeholder="Enter your postcode"
-                          />
-                        )}
-                      </InputMask>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            )}
+          <NameFields form={form} isLoading={isLoading} config={config} />
+          
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            <div className="lg:col-span-2">
+              <ContactFields form={form} isLoading={isLoading} config={config} />
+            </div>
+            <PostcodeField 
+              form={form} 
+              isLoading={isLoading} 
+              config={config}
+              onAddressResolved={(address) => {
+                setResolvedAddress(address);
+                form.setValue('address', address);
+              }}
+            />
           </div>
 
           {resolvedAddress && (
