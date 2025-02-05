@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
-import { ColorPicker } from "@/components/ui/color-picker";
 import { supabase } from "@/integrations/supabase/client";
 
 export const WhitelabelSettings = () => {
@@ -24,7 +23,6 @@ export const WhitelabelSettings = () => {
       const { error } = await supabase
         .from('whitelabel_settings')
         .upsert({
-          id: 1, // Single configuration row
           company_name: settings.companyName,
           primary_color: settings.primaryColor,
           logo_url: settings.logoUrl,
