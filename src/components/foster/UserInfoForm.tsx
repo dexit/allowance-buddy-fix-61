@@ -1,4 +1,3 @@
-
 import { Form } from "@/components/ui/form";
 import { motion } from "framer-motion";
 import { Loader2 } from "lucide-react";
@@ -40,23 +39,31 @@ export function UserInfoForm({ onSubmit, isLoading, config }: UserInfoFormProps)
 
   const handleFormSubmit = async (data: UserInfoFormData) => {
     try {
-      try {
-        const { data: formConfig } = await supabase
-          .from('form_config')
-          .select('*')
-          .single();
+      // Try to get form config, but don't block submission if it fails
+      const { data: formConfig, error } = await supabase
+        .from('form_config')
+        .select('*')
+        .single();
 
-        if (formConfig) {
+      if (error) {
+        console.warn('Form config not found:', error);
+        // Continue with submission even if form_config table doesn't exist
+        onSubmit(data);
+        return;
+      }
+
+      if (formConfig) {
+        try {
           await supabase
             .from('form_submissions')
             .insert({
-              form_config_id: formConfig?.id,
+              form_config_id: formConfig.id,
               user_info: data,
               status: 'pending'
             });
+        } catch (submissionError) {
+          console.warn('Failed to store submission:', submissionError);
         }
-      } catch (error) {
-        console.warn('Failed to store submission, continuing anyway:', error);
       }
 
       onSubmit(data);
@@ -68,6 +75,7 @@ export function UserInfoForm({ onSubmit, isLoading, config }: UserInfoFormProps)
         description: "Some features may be limited but you can continue.",
         variant: "default"
       });
+      // Still call onSubmit even if there was an error
       onSubmit(data);
     }
   };
