@@ -46,10 +46,8 @@ export function UserInfoForm({ onSubmit, isLoading, config }: UserInfoFormProps)
         .single();
 
       if (error) {
-        console.warn('Form config not found:', error);
-        // Continue with submission even if form_config table doesn't exist
-        onSubmit(data);
-        return;
+        // Log the error but continue with form submission
+        console.warn('Form config not found:', error.message);
       }
 
       if (formConfig) {
@@ -66,16 +64,12 @@ export function UserInfoForm({ onSubmit, isLoading, config }: UserInfoFormProps)
         }
       }
 
+      // Always call onSubmit regardless of database operations
       onSubmit(data);
       
     } catch (error: any) {
       console.error('Error in form submission:', error);
-      toast({
-        title: "Warning",
-        description: "Some features may be limited but you can continue.",
-        variant: "default"
-      });
-      // Still call onSubmit even if there was an error
+      // Still call onSubmit even if there was an error with Supabase
       onSubmit(data);
     }
   };
@@ -113,7 +107,7 @@ export function UserInfoForm({ onSubmit, isLoading, config }: UserInfoFormProps)
 
           <Button
             type="submit"
-            className="w-full h-11 text-base font-medium bg-primary hover:bg-primary/90 text-white"
+            className="w-full h-11 text-base font-medium bg-primary hover:bg-primary/90 text-primary-foreground"
             disabled={isLoading}
           >
             {isLoading ? (
