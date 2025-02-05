@@ -1,6 +1,6 @@
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
-import { UserInfoFormData } from '@/components/foster/UserInfoForm';
+import { UserInfoFormData } from '@/lib/form-schemas';
 
 export const generatePDF = async (result: any, element: HTMLElement, userInfo: UserInfoFormData) => {
   try {

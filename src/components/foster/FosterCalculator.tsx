@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { calculateTotalAllowance } from "@/lib/calculator";
@@ -9,7 +8,8 @@ import { ChildForm } from "@/components/foster/ChildForm";
 import { ResultsDisplay } from "@/components/foster/ResultsDisplay";
 import { Timeline } from "@/components/foster/Timeline";
 import { v4 as uuidv4 } from "uuid";
-import { UserInfoForm, UserInfoFormData } from "@/components/foster/UserInfoForm";
+import { UserInfoForm } from "@/components/foster/UserInfoForm";
+import { UserInfoFormData } from "@/lib/form-schemas";
 import { ChildFormData, AgeGroup, Region } from "@/lib/types";
 import { StepContainer } from "@/components/foster/StepContainer";
 import { submitToHubspot } from "@/lib/hubspot";
