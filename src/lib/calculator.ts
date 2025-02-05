@@ -1,4 +1,5 @@
-import { ChildAllowance, TotalAllowance, AgeGroup, Region } from "@/lib/types";
+
+import { ChildAllowance, TotalAllowance, AgeGroup, Region, PriceModifier } from "@/lib/types";
 
 interface RegionalRates {
   London: number;
@@ -44,24 +45,31 @@ const ALLOWANCE_RATES: AllowanceRates = {
 export const DEFAULT_REGION = "Rest of England" as Region;
 export const BASE_RATE_MODIFIER = 0;
 
+const calculateModifiersTotal = (modifiers: PriceModifier[]): number => {
+  return modifiers.reduce((total, modifier) => total + modifier.amount, 0);
+};
+
 export const calculateAllowanceForChild = (
   ageGroup: AgeGroup,
   region: Region,
   isSpecialCare: boolean,
-  weekIntervals: Array<{ start: number; end: number }>
+  weekIntervals: Array<{ start: number; end: number }>,
+  additionalModifiers: PriceModifier[] = [],
+  deductionModifiers: PriceModifier[] = []
 ): ChildAllowance => {
   const baseAllowance = ALLOWANCE_RATES[ageGroup][region] * (1 + BASE_RATE_MODIFIER);
   const ageRelatedElement = 0;
   
-  // Calculate total weeks and total allowance based on intervals
   const totalWeeks = weekIntervals.reduce((sum, interval) => 
     sum + (interval.end - interval.start + 1), 0);
   
+  const additionalAmount = calculateModifiersTotal(additionalModifiers);
+  const deductionAmount = calculateModifiersTotal(deductionModifiers);
+  
   const baseTotal = baseAllowance;
   const specialCareAmount = isSpecialCare ? baseTotal * 0.5 : 0;
-  const weeklyAllowance = baseTotal + specialCareAmount;
+  const weeklyAllowance = baseTotal + specialCareAmount + additionalAmount - deductionAmount;
   
-  // Calculate the proportional allowance based on weeks in care
   const totalAllowance = (weeklyAllowance * totalWeeks);
 
   return {
@@ -69,6 +77,10 @@ export const calculateAllowanceForChild = (
     baseAllowance,
     ageRelatedElement,
     specialCareAmount,
+    weeklyModifiers: {
+      additions: additionalAmount,
+      deductions: deductionAmount
+    },
     totalAllowance
   };
 };
@@ -79,6 +91,8 @@ export const calculateTotalAllowance = (
     isSpecialCare: boolean; 
     weekIntervals: Array<{ start: number; end: number }>;
     region: Region;
+    additionalModifiers: PriceModifier[];
+    deductionModifiers: PriceModifier[];
   }>,
   isExperiencedCarer: boolean
 ): TotalAllowance => {
@@ -87,14 +101,16 @@ export const calculateTotalAllowance = (
       child.ageGroup, 
       child.region, 
       child.isSpecialCare,
-      child.weekIntervals
+      child.weekIntervals,
+      child.additionalModifiers,
+      child.deductionModifiers
     );
   });
 
   const weeklyTotal = childrenAllowances.reduce(
     (sum, child) => {
-      // Calculate weekly average based on total allowance
-      const totalWeeks = child.totalAllowance / (child.baseAllowance + child.specialCareAmount);
+      const totalWeeks = child.totalAllowance / (child.baseAllowance + child.specialCareAmount +
+        child.weeklyModifiers.additions - child.weeklyModifiers.deductions);
       return sum + (child.totalAllowance / totalWeeks);
     },
     0

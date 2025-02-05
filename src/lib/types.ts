@@ -1,6 +1,12 @@
+
 export interface WeekInterval {
   start: number;
   end: number;
+}
+
+export interface PriceModifier {
+  amount: number;
+  reason: string;
 }
 
 export interface ChildFormData {
@@ -9,6 +15,8 @@ export interface ChildFormData {
   isSpecialCare: boolean;
   weekIntervals: WeekInterval[];
   region: Region;
+  additionalModifiers: PriceModifier[];
+  deductionModifiers: PriceModifier[];
 }
 
 export interface UserInfoFormData {
@@ -27,6 +35,10 @@ export interface ChildAllowance {
   ageRelatedElement: number;
   specialCareAmount: number;
   totalAllowance: number;
+  weeklyModifiers: {
+    additions: number;
+    deductions: number;
+  };
 }
 
 export interface TotalAllowance {

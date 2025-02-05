@@ -10,7 +10,6 @@ import { Timeline } from "@/components/foster/Timeline";
 import { v4 as uuidv4 } from "uuid";
 import { UserInfoForm, UserInfoFormData } from "@/components/foster/UserInfoForm";
 import { ChildFormData, AgeGroup, Region } from "@/lib/types";
-import { StepHeader } from "@/components/foster/StepHeader";
 import { StepContainer } from "@/components/foster/StepContainer";
 import { submitToHubspot } from "@/lib/hubspot";
 
@@ -25,7 +24,9 @@ export const FosterCalculator = () => {
       ageGroup: "0-2" as AgeGroup,
       isSpecialCare: false,
       weekIntervals: [{ start: 1, end: 52 }],
-      region: DEFAULT_REGION
+      region: DEFAULT_REGION,
+      additionalModifiers: [],
+      deductionModifiers: []
     }
   ]);
   const [result, setResult] = useState<any>(null);
@@ -49,7 +50,9 @@ export const FosterCalculator = () => {
         ageGroup: "0-2" as AgeGroup,
         isSpecialCare: false,
         weekIntervals: [{ start: 1, end: 52 }],
-        region: DEFAULT_REGION
+        region: DEFAULT_REGION,
+        additionalModifiers: [],
+        deductionModifiers: []
       }
     ]);
   };
@@ -66,6 +69,27 @@ export const FosterCalculator = () => {
     ));
   };
 
+  const submitToEndpoint = async (data: any) => {
+    try {
+      const response = await fetch('https://api.example.com/foster-calculations', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data)
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to submit to endpoint');
+      }
+      
+      return await response.json();
+    } catch (error) {
+      console.error('Error submitting to endpoint:', error);
+      throw error;
+    }
+  };
+
   const handleCalculate = async () => {
     if (!userInfo) return;
     
@@ -73,34 +97,50 @@ export const FosterCalculator = () => {
     setResult(calculatedResult);
     setStep('results');
     
-    // Try to submit to Hubspot but don't block on failure
+    const submissionData = {
+      userInfo,
+      children,
+      result: calculatedResult,
+      timestamp: new Date().toISOString()
+    };
+
     try {
-      const hubspotData = {
-        name: `${userInfo.firstName} ${userInfo.lastName}`,
-        email: userInfo.email,
-        phone: userInfo.phone,
-        isExperiencedCarer: userInfo.isExperiencedCarer
-      };
+      // Submit to Supabase
+      // const { error: submissionError } = await supabase
+      //   .from('form_submissions')
+      //   .insert({
+      //     user_info: submissionData.userInfo,
+      //     status: 'completed'
+      //   });
+
+      // if (submissionError) throw submissionError;
+
+      // Submit to external endpoint
+      await submitToEndpoint(submissionData);
       
-      const response = await submitToHubspot({
-        userInfo: hubspotData,
+      // Submit to Hubspot
+      await submitToHubspot({
+        userInfo: {
+          name: `${userInfo.firstName} ${userInfo.lastName}`,
+          email: userInfo.email,
+          phone: userInfo.phone,
+          isExperiencedCarer: userInfo.isExperiencedCarer
+        },
         children,
         result: calculatedResult
       });
-      
-      if (response.status === 'success') {
-        toast({
-          title: "Calculation Complete",
-          description: "Your foster care allowance has been calculated.",
-          variant: "default",
-        });
-      }
-    } catch (error) {
-      console.warn('Failed to submit to Hubspot:', error);
+
       toast({
         title: "Calculation Complete",
-        description: "Your foster care allowance has been calculated.",
+        description: "Your foster care allowance has been calculated and saved.",
         variant: "default",
+      });
+    } catch (error) {
+      console.error('Submission error:', error);
+      toast({
+        title: "Calculation Complete",
+        description: "Your foster care allowance has been calculated, but there was an error saving the data.",
+        variant: "destructive",
       });
     }
   };
@@ -125,7 +165,9 @@ export const FosterCalculator = () => {
       ageGroup: "0-2" as AgeGroup,
       isSpecialCare: false,
       weekIntervals: [{ start: 1, end: 52 }],
-      region: DEFAULT_REGION
+      region: DEFAULT_REGION,
+      additionalModifiers: [],
+      deductionModifiers: []
     }]);
     setResult(null);
   };
