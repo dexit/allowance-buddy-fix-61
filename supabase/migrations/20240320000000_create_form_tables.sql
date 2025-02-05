@@ -22,35 +22,25 @@ create table if not exists public.form_submissions (
 alter table public.form_submissions enable row level security;
 
 -- Create RLS policies for form_config
-create policy "Enable read access for authenticated users"
+create policy "Enable read access for all users"
     on public.form_config
     for select
-    to authenticated
     using (true);
 
-create policy "Enable write access for authenticated admin users"
+create policy "Enable write access for authenticated users"
     on public.form_config
     for all
-    to authenticated
-    using (
-        exists (
-            select 1 from public.user_roles
-            where user_id = auth.uid()
-            and role = 'admin'
-        )
-    );
+    using (auth.role() = 'authenticated');
 
 -- Create RLS policies for form_submissions
-create policy "Enable read access for authenticated users"
+create policy "Enable read access for all users"
     on public.form_submissions
     for select
-    to authenticated
     using (true);
 
 create policy "Enable insert for all users"
     on public.form_submissions
     for insert
-    to authenticated
     with check (true);
 
 -- Create function to automatically update updated_at timestamp

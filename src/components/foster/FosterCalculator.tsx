@@ -106,19 +106,6 @@ export const FosterCalculator = () => {
     };
 
     try {
-      // Submit to Supabase
-      // const { error: submissionError } = await supabase
-      //   .from('form_submissions')
-      //   .insert({
-      //     user_info: submissionData.userInfo,
-      //     status: 'completed'
-      //   });
-
-      // if (submissionError) throw submissionError;
-
-      // Submit to external endpoint
-      await submitToEndpoint(submissionData);
-      
       // Submit to Hubspot
       await submitToHubspot({
         userInfo: {
@@ -133,7 +120,7 @@ export const FosterCalculator = () => {
 
       toast({
         title: "Calculation Complete",
-        description: "Your foster care allowance has been calculated and saved.",
+        description: "Your foster care allowance has been calculated.",
         variant: "default",
       });
     } catch (error) {
