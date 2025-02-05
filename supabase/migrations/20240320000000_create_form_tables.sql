@@ -6,9 +6,6 @@ create table if not exists public.form_config (
     updated_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
--- Enable RLS
-alter table public.form_config enable row level security;
-
 -- Create form_submissions table
 create table if not exists public.form_submissions (
     id uuid primary key default gen_random_uuid(),
@@ -19,6 +16,7 @@ create table if not exists public.form_submissions (
 );
 
 -- Enable RLS
+alter table public.form_config enable row level security;
 alter table public.form_submissions enable row level security;
 
 -- Create RLS policies for form_config
