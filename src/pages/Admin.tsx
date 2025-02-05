@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
@@ -6,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FormConfigList } from "@/components/admin/FormConfigList";
 import { SubmissionsList } from "@/components/admin/SubmissionsList";
+import { WhitelabelSettings } from "@/components/admin/WhitelabelSettings";
 
 export default function Admin() {
   const navigate = useNavigate();
@@ -57,6 +59,7 @@ export default function Admin() {
         <TabsList>
           <TabsTrigger value="form-config">Form Configuration</TabsTrigger>
           <TabsTrigger value="submissions">Submissions</TabsTrigger>
+          <TabsTrigger value="whitelabel">White-label</TabsTrigger>
         </TabsList>
 
         <TabsContent value="form-config">
@@ -65,6 +68,10 @@ export default function Admin() {
 
         <TabsContent value="submissions">
           <SubmissionsList />
+        </TabsContent>
+
+        <TabsContent value="whitelabel">
+          <WhitelabelSettings />
         </TabsContent>
       </Tabs>
     </div>
