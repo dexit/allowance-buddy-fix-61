@@ -48,24 +48,27 @@ export function ContactFields({ form, isLoading, config }: ContactFieldsProps) {
         <FormField
           control={form.control}
           name="phone"
-          render={({ field: { ref, ...field } }) => (
+          render={({ field: { ref, onChange, onBlur, ...field } }) => (
             <FormItem>
               <FormLabel className="text-base font-medium text-gray-900">Phone Number</FormLabel>
               <FormControl>
                 <InputMask
                   {...field}
+                  onChange={(e) => {
+                    // Only store raw numbers during typing
+                    const rawValue = e.target.value.replace(/[^0-9]/g, '');
+                    onChange(rawValue);
+                  }}
+                  onBlur={(e) => {
+                    // Format the number when the field loses focus
+                    const formattedValue = formatPhoneNumber(field.value);
+                    onChange(formattedValue);
+                    onBlur();
+                  }}
                   mask={field.value.startsWith('+44') ? '+44 9999 999 9999' : '9999999999'}
                   maskChar={null}
-                  value={formatPhoneNumber(field.value)}
                   disabled={isLoading}
                   alwaysShowMask={false}
-                  beforeMaskedStateChange={({ nextState }) => {
-                    const { value } = nextState;
-                    return {
-                      ...nextState,
-                      value: value.replace(/[^0-9+\s]/g, '')
-                    };
-                  }}
                 >
                   {(inputProps: any) => (
                     <Input

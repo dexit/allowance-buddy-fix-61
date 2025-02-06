@@ -24,29 +24,22 @@ export function PostcodeField({ form, isLoading, config, onAddressResolved }: Po
     <FormField
       control={form.control}
       name="postcode"
-      render={({ field: { ref, ...field } }) => (
+      render={({ field: { ref, onChange, onBlur, ...field } }) => (
         <FormItem>
           <FormLabel className="text-base font-medium text-gray-900">Postcode</FormLabel>
           <FormControl>
             <InputMask
               {...field}
-              mask="aa*9[9] 9aa"
-              maskChar={null}
-              formatChars={{
-                'a': '[A-Za-z]',
-                '9': '[0-9]',
-                '*': '[0-9A-Za-z]'
-              }}
-              beforeMaskedStateChange={({ nextState }) => {
-                const { value } = nextState;
-                return {
-                  ...nextState,
-                  value: value.toUpperCase()
-                };
+              onChange={(e) => {
+                // Store raw value during typing
+                const rawValue = e.target.value.replace(/[^A-Za-z0-9]/g, '').toUpperCase();
+                onChange(rawValue);
               }}
               onBlur={async (e) => {
-                field.onBlur();
                 const value = e.target.value.trim();
+                onBlur();
+                
+                // Format postcode on blur
                 if (value.length >= 6) {
                   try {
                     const address = await lookupPostcode(value);
@@ -57,6 +50,13 @@ export function PostcodeField({ form, isLoading, config, onAddressResolved }: Po
                     console.error('Error looking up postcode:', error);
                   }
                 }
+              }}
+              mask="aa*9[9] 9aa"
+              maskChar={null}
+              formatChars={{
+                'a': '[A-Za-z]',
+                '9': '[0-9]',
+                '*': '[0-9A-Za-z]'
               }}
               disabled={isLoading}
             >
