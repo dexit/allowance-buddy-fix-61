@@ -20,6 +20,20 @@ export function PostcodeField({ form, isLoading, config, onAddressResolved }: Po
     return null;
   }
 
+  const formatPostcode = (value: string) => {
+    // Remove all spaces and non-alphanumeric characters
+    const clean = value.replace(/[^A-Z0-9]/gi, '').toUpperCase();
+    
+    if (clean.length < 5) return clean;
+    
+    // Split into outward and inward codes
+    const inward = clean.slice(-3); // Last 3 characters
+    const outward = clean.slice(0, -3); // Everything else
+    
+    // Combine with a space
+    return `${outward} ${inward}`;
+  };
+
   return (
     <FormField
       control={form.control}
@@ -36,13 +50,15 @@ export function PostcodeField({ form, isLoading, config, onAddressResolved }: Po
                 onChange(rawValue);
               }}
               onBlur={async (e) => {
-                const value = e.target.value.trim();
+                const value = e.target.value;
+                const formattedValue = formatPostcode(value);
+                onChange(formattedValue);
                 onBlur();
                 
-                // Format postcode on blur
-                if (value.length >= 6) {
+                // Lookup postcode if we have enough characters
+                if (value.length >= 5) {
                   try {
-                    const address = await lookupPostcode(value);
+                    const address = await lookupPostcode(formattedValue);
                     if (address) {
                       onAddressResolved(address);
                     }
@@ -51,12 +67,12 @@ export function PostcodeField({ form, isLoading, config, onAddressResolved }: Po
                   }
                 }
               }}
-              mask="aa*9[9] 9aa"
+              mask={field.value.length > 4 ? "a**9 9aa" : "a**9*"}
               maskChar={null}
               formatChars={{
                 'a': '[A-Za-z]',
                 '9': '[0-9]',
-                '*': '[0-9A-Za-z]'
+                '*': '[A-Za-z0-9]'
               }}
               disabled={isLoading}
             >
